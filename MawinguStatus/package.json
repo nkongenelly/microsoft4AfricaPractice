@@ -1,0 +1,40 @@
+{
+    "id": "stausMawingu.tickets",
+    "schemaVersion": 1,
+    "version": 1,
+    "minorVersion": 3,
+    "providerName": "NanyukiStatus Tester",
+    "displayName": "Status Check",
+    "description": "Custom action to collect feedback.",
+    "icon": "icon.png",
+    "appModel": "AppModel.json",
+    "views": {
+        "CreationView": {
+            "labelHeader": "Feedback requested",
+            "sourceLocation": "CreationView.html",
+            "showNativeToolbar": true,
+            "backDialogTitle": "Confirmation",
+            "backDialogDescription": "Are you sure you want to discard?"
+        },
+        "ChatCanvasCardView": {
+            "showHeader": true,
+            "showExpiry": true,
+            "showResponseCount": true,
+            "labelResponseSending": "Submitting your feedback",
+            "labelResponded": "You have provided feedback",
+            "labelResponseFailed": "Feedback submission failed",
+            "labelRespondToForm": "CONFIRM FEEDBACK",
+            "isResponseEditable": true
+        },
+        "ResponseView": {
+            "labelHeader": "Provide feedback",
+            "sourceLocation": "ResponseView.html",
+            "showNativeToolbar": true
+        },
+        "ResponseResultsView": {
+            "labelPageHeader": "Feedback summary",
+            "sourceLocation": "SummaryView.html",
+            "showNativeToolbar": true
+        }
+    }
+}

@@ -1,0 +1,35 @@
+{
+    "id": "com.nanyukicustomers.planting",
+    "schemaVersion": 1,
+    "version": "9",
+    "minorVersion": 1,
+    "providerName": "NanyukiAF",
+    "displayName": "Planting",
+    "description": "Planting",
+    "icon": "planting.png",
+    "appModel": "AppModel.json",
+    "dials": {
+        "isLocalised": false,
+        "isPinned": false
+    },
+    "actionScope": "Group",
+    "views": {
+        "CreationView": {
+            "sourceLocation": "Response.html",
+            "showNativeToolbar": false
+        },
+        "ChatCanvasCardView": {
+            "showReceipts": false,
+            "showLikes": false,
+            "showComments": false,
+            "labelResponseSending": "Submitting your details",
+            "labelResponded": "Planting details provided",
+            "labelResponseFailed": "Planting details submission failed",
+            "isResponseEditable": false
+        },
+        "ResponseResultsView": {
+            "sourceLocation": "ResponseSummary.html",
+            "showNativeToolbar": false
+        }
+    }
+}

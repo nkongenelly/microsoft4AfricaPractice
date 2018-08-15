@@ -1,0 +1,168 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="bootstrap.min.css">
+</head>
+
+<body onload="onCreatePageLoad()">
+    <div class="container card" style="padding-top: 15px; margin-top:2%">
+        <div id="formSearchDiv">
+
+            <form name="searchForm" id="formSearch" class="form-horizontal" method="POST">
+                <div class="card-header">
+                    <p class="text-info">Form to confirm customer exists</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Case Number</label>
+                        <input class="form-control" type="text" id="status" name="status" required/>
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary btn-lg btn-block" style="opacity: 0.8">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+       <div id = "displayStatus">
+            
+
+        </div>
+            
+    </div>
+
+
+    <script type="text/javascript" src="KASClient.js"></script>
+
+    <script type="text/javascript">
+        var _form; // type: KASForm
+        var methods = ["GET", "POST"];
+        var baseUrl = "https://nanyukiaf-mawingu-api.azurewebsites.net/";
+        //var baseUrl = "https://nanyukiaf-hospital-eugene.azurewebsites.net/";
+        // Below will be called on onload of CreationView.html
+        function onCreatePageLoad() {
+            document.getElementById("formSearch").addEventListener("submit", searchStatus);
+            // document.getElementById("issueFill").addEventListener("submit", createCase);
+
+            KASClient.Form.initFormAsync(function(form, error) {
+                if (error != null) {
+                    showAlert("Error:initFormAsync:" + error);
+                    return;
+                }
+                _form = form;
+            });
+        }
+
+        function createObject(readyStateFunction, requestMethod, requestUrl, sendData = null) {
+
+            var obj = new XMLHttpRequest;
+            obj.onreadystatechange = function() {
+                if ((this.readyState == 4) && (this.status == 200)) {
+                    readyStateFunction(this.responseText);
+                }
+            };
+            console.log(sendData);
+            obj.open(requestMethod, requestUrl, true);
+            if (requestMethod == 'POST') {
+                obj.setRequestHeader("Content-type", "application/json");
+                obj.send(sendData);
+            } else {
+                obj.send();
+            }
+        }
+
+        function searchStatus(e) {
+            e.preventDefault();
+            //1. Show preloader
+            KASClient.App.showProgressBar("Fetching Results");
+            //2. Retrieve form values
+            var status = document.forms["searchForm"]["status"].value;
+            var sendData;
+            //3. Validate
+            if (status == null || status == "") {
+                KASClient.App.showNativeErrorMessage("Please enter the customer's case number.");
+         
+            } else {
+                sendData = {
+                    status: status
+                };
+            }
+            var jsonData = JSON.stringify(sendData);
+            //4. Submit form values to search web service
+            createObject(displayStatus, methods[0], baseUrl + "searchStatus/" + sendData.status);
+        }
+
+        function displayStatus(responseTxt) {
+
+            KASClient.App.hideProgressBar();
+            //1. validate   (responseTxt != "") && (responseTxt != null) && (responseTxt != "null")
+            if (responseTxt.length > 2) {
+                //2. Show dropdown for valid data
+                var responseObj = JSON.parse(responseTxt);
+                console.log(responseTxt);
+                var tData;
+
+                var statuses = "<div></div>";
+
+                for (tData in responseObj) { 
+                    if(responseObj[tData].statuscode == 1)
+                    {
+                        statuses +="<p>Case Title: " + responseObj[tData].title + "</p>";
+                        statuses +="<p>Status Description: " + responseObj[tData].description + "</p>";
+                        statuses += "<p>Status: In Pogress </p><br/>";
+                        
+                    }
+                    else if(responseObj[tData].statuscode == 2){
+                        statuses +="<p>Case Title: " + responseObj[tData].title + "</p>";
+                        statuses +="<p>Status Description: " + responseObj[tData].description + "</p>";
+                        statuses += "<p>Status: On Hold </p><br/>";
+                        
+                    }
+                    else if(responseObj[tData].statuscode == 3){
+                        statuses +="<p>Case Title: " + responseObj[tData].title + "</p>";
+                        statuses +="<p>Status Description: " + responseObj[tData].description + "</p>";
+                        statuses += "<p>Status: Waiting for Details </p><br/>";
+                        
+                    }
+                    else if(responseObj[tData].statuscode == 4){
+                        statuses +="<p>Case Title: " + responseObj[tData].title + "</p>";
+                        statuses +="<p>Status Description: " + responseObj[tData].description + "</p>";
+                        statuses += "<p>Status: Researching </p><br/>";
+                        
+                    }
+                    else if(responseObj[tData].statuscode == 5){
+                        statuses +="<p>Case Title: " + responseObj[tData].title + "</p>";
+                        statuses +="<p>Status Description: " + responseObj[tData].description + "</p>";
+                        statuses += "<p>Status: Problem Solved </p><br/>";
+                        
+                    }
+                    else if(responseObj[tData].statuscode == 6){
+                        statuses +="<p>Case Title: " + responseObj[tData].title + "</p>";
+                        statuses +="<p>Status Description: " + responseObj[tData].description + "</p>";
+                        statuses += "<p>Status: Canceled </p><br/>";
+                        
+                    }
+                                      
+                    
+                    
+                }
+                document.getElementById("displayStatus").innerHTML = statuses;
+                document.getElementById("formSearchDiv").style.display = "none";
+                document.getElementById("displayStatus").style.display = "block";
+            } else {
+                //3. Remove preloader
+                //KASClient.App.hideProgressBar();
+
+                //4. Show error message     
+                KASClient.App.showNativeErrorMessage("Cannot find this Case Number. Please confirm and try again.");
+                
+            }
+            function submitFormRequest(){
+            KASClient.submitFormRequest(_form);
+            }
+        }
+  
+    </script>
+</body>
+
+</html>

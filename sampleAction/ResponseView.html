@@ -1,0 +1,64 @@
+<html> 
+
+  <head> 
+      <title></title> 
+      <script type="text/javascript" src="KASClient.js"></script> 
+      <link rel="stylesheet" href="bootstrap.min.css">
+      <style>
+      .container {
+          margin: 2px;
+      }
+      </style>
+      <script type="text/javascript"> 
+          // Globals 
+          var _form; // type: KASForm 
+          var _fetchResult;
+
+          // Below will be called on onload of SummaryView.html 
+          function onSummaryPageLoad() { 
+              KASClient.App.showProgressBar("Fetching Results");           
+              KASClient.Form.getFormAsync(function (form, error) {                
+                 if (error != null) {                    
+                    KASClient.App.showNativeErrorMessage("Error:getFormAsync:" + error);                    
+                    return;                
+                 }                
+                 _form = form;
+                 
+              });  
+
+                //_fetchResult = Form.properties[jsonResult].value;
+               //var myJson = JSON.parse(_fetchResult);
+
+            //    if((myJson == null) || (myJson == "") ){
+            //     document.getElementById("contents").innerHTML = "Sorry check later";
+            //    }
+            //    else{
+               var card = '';
+               var startCard = '<div class="card card-block mb-3" style="background-color:#c0cfc8"><div class="container-fluid"><div class="row no-gutters"><div class="col py-3">';
+               var endCard =  '</div> </div> </div> </div>';
+
+               //for(cardIndex in myJson){
+                   card += startCard + '<p class="card-title"> Customer name: Nelly</p>';
+                   card += startCard + '<p class="card-text"> Issue: Connectivity</p>';
+                   card += '<p class="text-info card-text"> Contact: +254715416545</p>';
+                   card += '<p class="text-info card-text"> Status: In Progress</p>';
+                   //card += '<a href="#" class="btn btn-outline-success btn-block">View</a>';
+                  
+               //}
+               card += endCard;
+               KASClient.App.hideProgressBar();
+               document.getElementById("contents").innerHTML = card;
+            //}
+                   
+           }
+
+        
+        
+      </script> 
+  </head> 
+
+  <body onload="onSummaryPageLoad()" > 
+    <div id="contents"></div>
+  </body> 
+
+  </html>

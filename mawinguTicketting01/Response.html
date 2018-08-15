@@ -1,0 +1,373 @@
+<html>
+
+<head>
+    <link rel="stylesheet" href="bootstrap.min.css">
+</head>
+
+<body onload="onCreatePageLoad()">
+    <div class="container card" style="padding-top: 15px; margin-top:2%">
+        <div id="formSearchDiv">
+
+            <form name="searchForm" id="formSearch" class="form-horizontal" method="POST">
+                <div class="card-header">
+                    <p class="text-info">Form to confirm customer exists</p>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Name</label>
+                        <input class="form-control" type="text" id="fullName" name="fullName" required/>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone number</label>
+                        <input class="form-control" type="text" id="phone" name="phone" />
+                    </div>
+                    <div>
+                        <button type="submit" class="btn btn-primary btn-lg btn-block" style="opacity: 0.8">Search</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div id="issueFillDiv" style="display: none;">
+            <form name="fillIssue" id="issueFill">
+                <div class="card-header">
+                    <p class="text-info">Form to confirm customer exists</p>
+                </div>
+                <div class="card-body">
+                    <div class="input-group input-group-lg">
+                        <label style="padding-right: 57px">Customer</label>
+                        <select class="custom-select" name="customer" id="customer"></select>
+                    </div>
+                    <div class="input-group input-group-lg" style="padding-top: 30px">
+                        <label style="padding-right: 19px">Customer Type</label>
+                        <select class="custom-select" name="customerType" id="customerType">
+							<option value="">--Select customer type</option>
+							<option value="Consumer Merchant" checked>Consumer - Merchant</option>
+							<option value="Consumer Customer" checked>Consumer - Customer</option>
+							<option value="Enterprise" checked>Enterprise</option>
+						</select>
+                    </div>
+
+                    <div class="input-group input-group-lg" style="padding-top: 30px">
+                        <label style="padding-right: 40px">Department</label>
+                        <select class="custom-select" name="department" id="department">
+							<option selected>--Select department--</option> 
+							<option value="Technical" checked>Technical</option>
+							<option value="Finance" checked>Finance</option>
+							<option value="Operations" checked>Operations</option> 
+							<option value="Sales & Marketing" checked>Sales & Marketing</option>
+							<option value="Customer Service" checked>Customer</option>
+						</select>
+                    </div>
+
+                    <div class="input-group mb-3" style="padding-top: 30px">
+                        <label style="padding-right: 76px">Region</label>
+                        <select class="custom-select" name="region" id="region">
+							<option selected>--Select region--</option> 
+							<option value="Meru" checked>Meru</option>
+							<option value="Nyeri" checked>Nyeri</option>
+							<option value="Karatina" checked>Karatina</option> 
+							<option value="Nanyuki" checked>Nanyuki</option>
+							<option value="Embu" checked>Embu</option>
+						</select>
+                    </div>
+
+                    <div>
+                        <label>Location</label>
+                        <input class="form-control" type="text" name="area" id="area" required>
+                    </div>
+
+
+                    <div>
+                        <label>Issue Title</label>
+                        <input class="form-control" type="text" name="issue" id="issue" required>
+                    </div>
+
+                    <div>
+                        <label>Commando's Number</label>
+                        <input class="form-control" type="text" name="commando" id="commando" required>
+                    </div>
+
+                    <div style="padding-bottom: 30px">
+                        <label>Issue Description</label>
+                        <textarea class="form-control" name="details" id="details" required></textarea>
+                    </div>
+
+
+                    <div class="form-group" style="bottom: 0px; right: 15px; left:15px;">
+                        <button class="btn btn-primary btn-lg btn-block" style="opacity: 0.8" type="button" name="submit" onclick="submitData()">Submit Ticket</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script type="text/javascript" src="KASClient.js"></script>
+
+    <script type="text/javascript">
+        var _form; // type: KASForm
+        var methods = ["GET", "POST"];
+        var baseUrl = "https://nanyukiaf-mawingu-api.azurewebsites.net/";
+        //var baseUrl = "https://nanyukiaf-hospital-eugene.azurewebsites.net/";
+        var formCustomerId = new KASClient.KASFormProperty();
+        var formCustomerName = new KASClient.KASFormProperty();
+        var formCustomerNumber = new KASClient.KASFormProperty();
+        var formCustomerType = new KASClient.KASFormProperty();
+        var formDepartment = new KASClient.KASFormProperty();
+        var formRegion = new KASClient.KASFormProperty();
+        var formLocation = new KASClient.KASFormProperty();
+        var formIssue = new KASClient.KASFormProperty();
+        var formDetails = new KASClient.KASFormProperty();
+        // Below will be called on onload of CreationView.html
+        function onCreatePageLoad() {
+             document.getElementById("formSearch").addEventListener("submit", searchNames);
+            // document.getElementById("issueFill").addEventListener("submit", submitData);
+
+            KASClient.Form.initFormAsync(function(form, error) {
+                if (error != null) {
+                    showAlert("Error:initFormAsync:" + error);
+                    return;
+                }
+                _form = form;
+            });
+        }
+
+        function createObject(readyStateFunction, requestMethod, requestUrl, sendData = null) {
+
+            var obj = new XMLHttpRequest;
+            obj.onreadystatechange = function() {
+                if ((this.readyState == 4) && (this.status == 200)) {
+                    readyStateFunction(this.responseText);
+                }
+            };
+            console.log(sendData);
+            obj.open(requestMethod, requestUrl, true);
+            if (requestMethod == 'POST') {
+                obj.setRequestHeader("Content-type", "application/json");
+                obj.send(sendData);
+            } else {
+                obj.send();
+            }
+        }
+
+        function searchNames(e) {
+            e.preventDefault();
+            //1. Show preloader
+            KASClient.App.showProgressBar("Fetching Results");
+            //2. Retrieve form values
+            var fullName = document.forms["searchForm"]["fullName"].value;
+            var phone1 = document.forms["searchForm"]["phone"].value;
+            var sendData;
+            //3. Validate
+            if (fullName == null || fullName == "") {
+                KASClient.App.showNativeErrorMessage("Please enter the customer's name.");
+            }
+            if ((phone1 != null) || (phone1 != "")) {
+                sendData = {
+                    name: fullName,
+                    phone: phone1
+                };
+            } else {
+                sendData = {
+                    name: fullName
+                };
+            }
+            var jsonData = JSON.stringify(sendData);
+            //4. Submit form values to search web service
+            createObject(displayCustomers, methods[0], baseUrl + "searchCustomer/" + sendData.name);
+        }
+
+        function displayCustomers(responseTxt) {
+
+            KASClient.App.hideProgressBar();
+            //1. validate   (responseTxt != "") && (responseTxt != null) && (responseTxt != "null")
+            if (responseTxt.length > 2) {
+                //2. Show dropdown for valid data
+                var responseObj = JSON.parse(responseTxt);
+                var tData;
+
+                var option = "<option selected>--Select customer--</option>";
+
+                for (tData in responseObj) {
+                    option += "<option value='" + responseObj[tData].customerId + "' cName='" + responseObj[tData].name + "'>" +
+                        responseObj[tData].name + " " + responseObj[tData].telephone +
+                        "</option>";
+                }
+                document.getElementById("customer").innerHTML = option;
+                document.getElementById("formSearchDiv").style.display = "none";
+                document.getElementById("issueFillDiv").style.display = "block";
+            } else {
+                //3. Remove preloader
+                //KASClient.App.hideProgressBar();
+
+                //4. Show error message     
+                KASClient.App.showNativeErrorMessage("Cannot find this customer. Please try again.");
+            }
+        }
+
+        function getSelectedText(elt) {
+            var textArray = elt.options[elt.selectedIndex].text;
+            return textArray.split(" ");
+        }
+
+        function testCustomer() {
+            var elem = document.getElementById("customer");
+            var cName = getSelectedText(elem);
+            alert(cName);
+        }
+
+        function submitData() {
+
+            var elem = document.getElementById("customer");
+            var customer = elem.value;
+            var customerId = document.getElementById("customer").value;
+            var customerType = document.getElementById("customerType").value;
+            var department = document.getElementById("department").value;
+            var region = document.getElementById("region").value;
+            var area = document.getElementById("area").value;
+            var issue = document.getElementById("issue").value;
+            var details = document.getElementById("details").value;
+            var commando = document.getElementById("commando").value;
+
+            if (customerType == null || customerType == "") {
+                KASClient.App.showNativeErrorMessage("Please select Customer Type.");
+            } else if (customer == null || customer == "") {
+                KASClient.App.showNativeErrorMessage("Please select customer.");
+            } else if (department == null || department == "") {
+                KASClient.App.showNativeErrorMessage("Please pick catgory.");
+            } else if (region == null || region == "") {
+                KASClient.App.showNativeErrorMessage("Please pick region.");
+            } else if (location == null || location == "") {
+                KASClient.App.showNativeErrorMessage("Please enter the location.");
+            } else if (issue == null || issue == "") {
+                KASClient.App.showNativeErrorMessage("Please enter the issue.");
+            } else if (details == null || details == "") {
+                KASClient.App.showNativeErrorMessage("Please enter the details of the named issue.");
+            } else {
+                var customerDetails = getSelectedText(elem);
+                var customerName = customerDetails[0];
+                var customerPhone = customerDetails[2];
+
+                formCustomerId.name = "customerId";
+                formCustomerId.value = customerId;
+                formCustomerId.type = "Text";
+
+                formCustomerName.name = "customerName";
+                formCustomerName.value = customerName;
+                formCustomerName.type = "Text";
+
+                formCustomerNumber.name = "customerPhone";
+                formCustomerNumber.value = customerPhone;
+                formCustomerNumber.type = "Text";
+
+                formCustomerType.name = "customerType";
+                formCustomerType.value = customerType;
+                formCustomerType.type = "Text";
+
+                formDepartment.name = "department";
+                formDepartment.value = department;
+                formDepartment.type = "Text";
+
+                formRegion.name = "region";
+                formRegion.value = region;
+                formRegion.type = "Text";
+
+                formLocation.name = "area";
+                formLocation.value = area;
+                formLocation.type = "Text";
+
+                formIssue.name = "issue";
+                formIssue.value = issue;
+                formIssue.type = "Text";
+
+                formDetails.name = "details";
+                formDetails.value = details;
+                formDetails.type = "Text";
+                var responseId = null;
+			    var isEditingPreviousResponse = false;
+
+                var questionToAnswerMap = JSON.parse("{}");
+                alert("questionToAnswerMap 00");
+                questionToAnswerMap[0] = customerName;
+                
+                questionToAnswerMap[1] = customerPhone;
+                
+                questionToAnswerMap[2] = customerType;
+                
+                questionToAnswerMap[3] = department;
+                
+                questionToAnswerMap[4] = region;
+                
+                questionToAnswerMap[5] = area;
+               
+                questionToAnswerMap[6] = issue;
+               
+                questionToAnswerMap[7] = details;
+                
+                questionToAnswerMap[8] = commando;
+                
+                alert(questionToAnswerMap);
+                KASClient.Form.sumbitFormResponse(questionToAnswerMap, null, false, true, false/* showInChatCanvas */);
+               // KASClient.Form.sumbitFormResponse(questionToAnswerMap, null, false, true, false);
+                 alert("Answers submitted");
+            }
+        }
+        alert("Answers already submitted");
+
+                //Set the description to form title
+            //    _form.title = issue;
+
+            //     // Set form expiry to an hour (Current time + 3600000 milliseconds)
+            //    _form.expiry = ((new Date).getTime() + 3600000);
+
+                // Finally send the request
+
+                // _form.questions[0].title = customerName;
+                // _form.questions[2].title = customerPhone;
+                // _form.questions[1].title = customerType;
+                // _form.questions[3].title = department;
+                // _form.questions[4].title = region;
+                // _form.questions[5].title = area;
+                // _form.questions[6].title = issue;
+                // _form.questions[7].title = details;
+                // _form.questions[8].title = commando;
+                // // _form.properties = [formCustomerId, formCustomerName, formCustomerNumber, formCustomerType, formDepartment, formRegion, formLocation, formIssue, formDetails]; 
+
+
+                // KASClient.Form.submitFormRequest(_form);
+               
+
+        function createCase()  {
+           // event.preventDefault();
+            var customerId = document.getElementById('customer').value;
+            var customerType = document.getElementById('customerType').value;
+            var department = document.getElementById('department').value;
+            var region = document.getElementById('region').value;
+            var location = document.getElementById('area').value;
+            var issue = document.getElementById('issue').value;
+            var issueDescription = document.getElementById('details').value;
+            var commando = document.getElementById('commando').value;
+            var removeZero = commando.split('');
+            removeZero.shift();
+            var commandoNumber = removeZero.join('');
+
+
+            var sendData = {
+                customerId: customerId,
+                customerType: customerType,
+                department: department,
+                region: region,
+                location: location,
+                issue: issue,
+                commando: commandoNumber,
+                issueDescription: issueDescription
+            };
+
+            var jsonData = JSON.stringify(sendData);
+
+
+           // createObject(submitData, methods[1], baseUrl + "createCase", jsonData);
+        }
+    </script>
+</body>
+
+</html>

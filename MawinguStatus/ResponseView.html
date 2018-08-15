@@ -1,0 +1,155 @@
+<html>
+
+<head>
+    <title></title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <script type="text/javascript" src="KASClient.js"></script>
+    <script>
+        var _form; // type: KASForm
+        var _myFormResponses; // type: KASFormResponse[]
+        var customerName;
+        var customerPhone;
+        var customerType;
+        var department;
+        var region;
+        var area;
+        var issue;
+        var details;
+
+        // Below will be called on onload of ResponseView.html 
+        function onResponsePageLoad() {
+
+            KASClient.App.registerHardwareBackPressCallback(function() {
+                KASClient.App.dismissCurrentScreen();
+            });
+            KASClient.App.showProgressBar("Fetching Results");
+            KASClient.Form.getFormAsync(function(form, error) {
+                if (error != null) {
+                    KASClient.App.showNativeErrorMessage("Error:getFormAsync:" + error);
+                    return;
+                }
+                _form = form;
+                showSummary();
+
+
+                // Document title would be the form title
+                // document.getElementById("title").innerHTML = _form.title;
+
+                // KASClient.Form.getMyFormResponsesAsync(showSummary) { 
+                //     if (error != null) { 
+                //         KASClient.App.showNativeErrorMessage("Error:getMyFormResponsesAsync:" + error); 
+                //         return; 
+                //     } 
+
+                //         _myFormResponses = responses;
+
+                // //         // Render previous response, if any
+                //          if (isCurrentUserResponded()) {
+                //             showSummary();
+                //              customerName = _myFormResponses[0].questionToAnswerMap["0"];
+                //              customerPhone = _myFormResponses[0].questionToAnswerMap["2"];
+                //              customerType = _myFormResponses[0].questionToAnswerMap["1"];
+                //              department = _myFormResponses[0].questionToAnswerMap["3"];
+                //              region = _myFormResponses[0].questionToAnswerMap["4"];
+                //              area = _myFormResponses[0].questionToAnswerMap["5"];
+                //              issue = _myFormResponses[0].questionToAnswerMap["6"];
+                //              details = _myFormResponses[0].questionToAnswerMap["7"];
+
+                //}
+                //  }); 
+            });
+        }
+
+        function showSummary() {
+            customerName = _form.questions[0].title;
+            customerPhone = _form.questions[2].title;
+            customerType = _form.questions[1].title;
+            department = _form.questions[3].title;
+            region = _form.questions[4].title;
+            area = _form.questions[5].title;
+            issue = _form.questions[6].title;
+            details = _form.questions[7].title;
+
+            // customerName = "Nelly N.";
+            // customerPhone = "0712345678";
+            // customerType = "Enterprise";
+            // department = "Technical";
+            // region = "Nanyuki";
+            // area = "Town";
+            // issue = "Connectivity";
+            // details = "Low signal";
+
+            var card = '';
+            var startCard = '<div class="card card-block mb-3" style="background-color:#c0cfc8"><div class="container-fluid"><div class="row no-gutters"><div class="col py-3">';
+            var endCard = '</div> </div> </div> </div>';
+
+            card += startCard + '<p class="card-title"> Customer name: ' + customerName + '</p>' +
+                '<p class="card-text"> Contact: ' + customerPhone + '</p>' +
+                '<p class="card-text"> Customer type: ' + customerType + '</p>' +
+                '<p class="card-text"> Owner: ' + department + '</p>' +
+                '<p class="card-text"> Issue: ' + issue + '</p>' +
+                '<p class="text-info card-text"> Description: ' + details + '</p>' +
+                '<p class="text-info card-text"> Region: ' + region + '</p>' +
+                '<p class="text-info card-text"> Area: ' + area + '</p>' +
+                endCard;
+            KASClient.App.hideProgressBar();
+            document.getElementById("contents").innerHTML = card;
+
+        }
+
+        function submitData() {
+            //     var selectedOption = getSelectedOption(); 
+            //     var remark = document.getElementById("description").value; 
+            //     submitFormResponse(selectedOption, remark); 
+            // } 
+
+            // function getSelectedOption() { 
+            //     // Check which radio button is checked 
+            //     var options = document.getElementsByName('option'); 
+            //     for (var i = 0; i < options.length; i++) { 
+            //         if (options[i].checked) { 
+            //             return parseInt(options[i].value); 
+            //         } 
+            //     } 
+            // } 
+
+            // // Below will be called when responder submits a new response 
+            // function submitFormResponse(selectedOption, remark) { 
+            //     if (remark == null || remark == "") { 
+            //         KASClient.App.showNativeErrorMessage("Please fill remark"); 
+            //     } else if (selectedOption == "") { 
+            //         KASClient.App.showNativeErrorMessage("Please select one option"); 
+            //     } else { 
+            //         // For submitting response a question-answer 
+            //         // map is required, lets create that! 
+            var myResponses = [customerName, customerType, customerPhone, department, region, area, issue, details];
+            var questionTo = JSON.stringify(myResponses);
+            var questionToAnswerMap = JSON.parse(questionTo);
+            // questionToAnswerMap[0] = selectedOption; 
+            // questionToAnswerMap[2] = remark; 
+
+            var responseId = null;
+            var isEditingPreviousResponse = false;
+
+            // If there is a previous response, update it
+            // if (isCurrentUserResponded()) {
+            //     responseId = _myFormResponses[0].id;
+            //     isEditingPreviousResponse = true;
+            // }
+
+            // Finally submit the response 
+            KASClient.Form.sumbitFormResponse(questionTo, responseId, isEditingPreviousResponse, false /* showInChatCanvas */ , false /* isAnonymous */ );
+            //} 
+        }
+
+        // function isCurrentUserResponded() {
+        //     return _myFormResponses && _myFormResponses.length > 0;
+        // }
+    </script>
+</head>
+
+<body onload="onResponsePageLoad()">
+    <div id="contents"></div>
+</body>
+
+</html>

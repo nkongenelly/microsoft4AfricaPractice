@@ -1,0 +1,148 @@
+<html>
+
+  <head>
+      <title></title>
+      <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, sans-serif;
+            background-color: white;
+        }
+        
+        b {
+            font-weight: 600
+        }
+                
+        .comment-header {
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6f7e8f;
+        }
+        
+        .divAttributes{
+            background-color: #c4e2dd;
+            color: #32485f;
+            font-size: 13.5pt;
+            margin: 16px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+            box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.12);
+            border-radius: 4px;
+        } 
+        .box{
+            color: #32485f;
+            font-size: 12pt;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+    </style>
+      <script type="text/javascript" src="KASClient.js"></script>
+      <script type="text/javascript">
+      
+          // Globals
+          var _form; // type: KASForm
+          var _currentLocation;
+          // Below will be called on onload of SummaryView.html
+          function onSummaryPageLoad() {
+              
+              KASClient.Form.getFormAsync(function (form, error) {
+                 if (error != null) {
+                    KASClient.App.showNativeErrorMessage("Error:getFormAsync:" + error);
+                    return;
+                 }
+                 _form = form;
+                
+                // Update the title in the form
+                //document.getElementById("title").innerText = _form.title;
+
+                KASClient.Form.getMyFormResponsesAsync(function(response, error){
+                    if (error != null) {
+                          KASClient.App.showNativeErrorMessage("Error fetching response - " + error);
+                          return;
+                       }
+                    //    alert("summary page 2");
+                    // Fetch boxNumber and placeName from questionToAnswerMap in response object
+                    //alert("summary page 3");
+                     var boxNumber = response[0].questionToAnswerMap[0];
+                     var placeName = response[0].questionToAnswerMap[1];
+                    var _name = response[0].questionToAnswerMap[2];
+                    var _phoneNumber = response[0].questionToAnswerMap[3];
+                    //var _currentLocation = response[0].questionToAnswerMap[4];
+                    // alert("summary page searching");
+                 
+        // Render the answer on the UI
+                    var card = '';
+                    //console.log(customerName);
+                    var startCard = '<div class="divAttributes">';
+                    var endCard = '</div>';
+
+                    card += startCard + '<div class="comment-header" style="padding: 14px; padding-bottom: 0pt;"> <p>Box Number</p>  <div class="box">' + boxNumber + '</div><div/>' +
+
+                        endCard;
+
+                    var card1 = '';
+                    //console.log(customerName);
+                    var startcard1 = '<div class="divAttributes">';
+                    var endcard1 = '</div>';
+
+                    card1 += startcard1 + '<div class="comment-header" style="padding: 14px; padding-bottom: 0pt;"> <p>Place Name</p>  <div class="box">' + placeName + '</div><div/>' +
+
+                        endcard1;
+
+                        var card2 = '';
+                    //console.log(customerName);
+                    var startcard2 = '<div class="divAttributes">';
+                    var endcard2 = '</div>';
+
+                    card2 += startcard2 + '<div class="comment-header" style="padding: 14px; padding-bottom: 0pt;"> <p>Registered Name</p>  <div class="box">' + _name + '</div><div/>' +
+                        endcard2;
+
+                        var card3 = '';
+                    //console.log(customerName);
+                    var startcard3 = '<div class="divAttributes">';
+                    var endcard3 = '</div>';
+
+                    card3 += startcard3 + '<div class="comment-header" style="padding: 14px; padding-bottom: 0pt;"> <p>Phone Number</p>  <div class="box">' + _phoneNumber + '</div><div/>' +
+                        endcard3;
+                    //console.log(customerName);
+                    // KASClient.App.hideProgressBar();
+
+                    
+                    // var card4 = '';
+                    // //console.log(customerName);
+                    // var startcard4 = '<div class="card card-block mb-3 card-header"><div class="container-fluid"><div class="row no-gutters"><div class="col py-3">';
+                    // var endcard4 = ' </div>';
+
+                    // card4 += inflateLocation();
+                    //     endcard4;
+                    document.getElementById("boxNumber").innerHTML = card;
+                    document.getElementById("placeName").innerHTML = card1;
+                    document.getElementById("name").innerHTML = card2;
+                    document.getElementById("phoneNumber").innerHTML = card3;
+                   // document.getElementById("currentLocation").innerHTML = inflateLocation();
+                    // var locationDetailsDiv = KASClient.UI.getElement("div");
+                    // KASClient.UI.addElement(inflateLocation(), locationDetailsDiv);
+                })
+              });
+           }
+        
+      </script>
+  </head>
+
+  <body onload="onSummaryPageLoad()">
+    <div id="contents">
+        <div id="boxNumber"></div>
+        <div id="placeName"></div>
+        <div id="name"></div>
+        <div id="phoneNumber"></div>
+        <div id="currentLocation"></div>
+     
+      
+    </div>
+  </body>
+
+  </html>

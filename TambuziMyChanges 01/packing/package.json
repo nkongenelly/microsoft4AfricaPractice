@@ -1,0 +1,35 @@
+{
+  "id": "com.testing.tambuziprovenance.packing", 
+	"schemaVersion": 1, 
+	"version": "1",
+	"minorVersion": 1,
+	"providerName": "TestingTambuzi",
+	"displayName": "Packing",
+	"description": "Update your flower packing details", 
+  "icon": "packing.png",
+  "appModel": "AppModel.json",
+  "dials": {
+    "isLocalised": false,
+    "isPinned": false
+  },
+  "actionScope": "Group",
+  "views": {
+    "ChatCanvasCardView": {
+      "showReceipts": false,
+      "showLikes": false,
+      "showComments": false,
+      "labelResponseSending": "Updating your packing details",
+      "labelResponseFailed": "Failed to update your packing details",
+      "labelResponded": "Packing details updated",
+      "isResponseEditable": false
+    },
+    "CreationView": {
+      "sourceLocation": "Response.html",
+      "showNativeToolbar": false
+    },
+    "ResponseResultsView": {
+      "sourceLocation": "ResponseSummary.html",
+      "showNativeToolbar": false
+    }
+  }
+}

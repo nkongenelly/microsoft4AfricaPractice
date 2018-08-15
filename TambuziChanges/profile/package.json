@@ -1,0 +1,35 @@
+{
+	"id": "com.tambuziapp.profile", 
+	"schemaVersion": 1, 
+	"version": "10",
+	"minorVersion": 1,
+	"providerName": "TambuziApp",
+	"displayName": "Profile - Dead",
+	"description": "Update your name, bio, profile image and worker ID", 
+  "icon": "dead.png",
+  "appModel": "AppModel.json",
+  "dials": {
+    "isLocalised": false,
+    "isPinned": false
+  },
+  "actionScope": "Group",
+  "views": {
+    "ChatCanvasCardView": {
+      "showReceipts": false,
+      "showLikes": false,
+      "showComments": false,
+      "labelResponseSending": "Updating your profile",
+      "labelResponseFailed": "Failed to update your profile",
+      "labelResponded": "Profile updated",
+      "isResponseEditable": false
+    },
+    "CreationView": {
+      "sourceLocation": "Response.html",
+      "showNativeToolbar": false
+    },
+    "ResponseResultsView": {
+      "sourceLocation": "ResponseSummary.html",
+      "showNativeToolbar": false
+    }
+  }
+}

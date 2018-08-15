@@ -1,0 +1,14 @@
+{ "questions":
+    [
+        { "title": "Phone Number",
+         "type": "Numeric" 
+        },
+        { "title": "Name",
+             "type": "Text" 
+        } 
+    ],
+    "title": "Customer's Details",
+    "visibility": "All",
+    "isAnonymous": false,
+    "isResponseAppended": true 
+}

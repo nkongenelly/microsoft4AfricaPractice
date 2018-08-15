@@ -1,0 +1,115 @@
+<html> 
+     
+    <head> 
+        <title></title> 
+        <script type="text/javascript" src="KASClient.js"></script> 
+        <script> 
+            var _form; // type: KASForm
+     
+            // Below will be called on onload of ResponseView.html 
+            function onResponsePageLoad() {
+                KASClient.App.registerHardwareBackPressCallback(function(){
+                    KASClient.App.dismissCurrentScreen();
+                }); 
+                
+                KASClient.Form.getFormAsync(function (form, error) { 
+                    if (error != null) { 
+                        KASClient.App.showNativeErrorMessage("Error:getFormAsync:" + error); 
+                        return; 
+                    } 
+                    _form = form; 
+                    
+                    // Document title would be the form title
+                    document.getElementById("title").innerHTML = _form.title;
+                }); 
+            } 
+     
+            function submitData() { 
+                var selectedOption = getSelectedOption(); 
+                var remark = document.getElementById("description").value; 
+                submitFormResponse(selectedOption, remark); 
+            } 
+     
+            function getSelectedOption() { 
+                // Check which radio button is checked 
+                var options = document.getElementsByName('option'); 
+                for (var i = 0; i < options.length; i++) { 
+                    if (options[i].checked) { 
+                        return parseInt(options[i].value); 
+                    } 
+                } 
+            } 
+     
+            // Below will be called when responder submits a new response 
+            function submitFormResponse(selectedOption, remark) { 
+                if (remark == null || remark == "") { 
+                    KASClient.App.showNativeErrorMessage("Please fill remark"); 
+                } else if (selectedOption == "") { 
+                    KASClient.App.showNativeErrorMessage("Please select one option"); 
+                } else { 
+                    // For submitting response a question-answer 
+                    // map is required, lets create that! 
+                    var questionToAnswerMap = JSON.parse("{}"); 
+                    questionToAnswerMap[0] = selectedOption; 
+                    questionToAnswerMap[1] = remark; 
+     
+                    var responseId = null; 
+                    var isEditingPreviousResponse = false;
+                    
+                    // Finally submit the response 
+                    KASClient.Form.sumbitFormResponse(
+                        questionToAnswerMap, 
+                        null /* responseId */, 
+                        false /* isEditingPreviousResponse*/ , 
+                        true /* showInChatCanvas */, 
+                        false /* isAnonymous */); 
+                } 
+            }
+            
+        </script> 
+    </head> 
+     
+    <body onload="onResponsePageLoad()"> 
+        <br/> <br/> 
+        <div> 
+            <p id="title"></p> 
+        </div> 
+        <div> 
+            <br/> <br/> 
+            <div> 
+                <p>Select your rating:</p> 
+                <br/> <br/> 
+                <div> 
+                    <label>1</label> 
+                    <input type="radio" name="option" id="option0" value="1" checked> 
+                </div> 
+                <div> 
+                    <label>2</label> 
+                    <input type="radio" name="option" id="option1" value="2"> 
+                </div> 
+                <div> 
+                    <label>3</label> 
+                    <input type="radio" name="option" id="option2" value="3"> 
+                </div> 
+                <div> 
+                    <label>4</label> 
+                    <input type="radio" name="option" id="option3" value="4"> 
+                </div> 
+                <div> 
+                    <label>5</label> 
+                    <input type="radio" name="option" id="option4" value="5"> 
+                </div> 
+            </div> 
+            <br/> <br/> 
+            <div> 
+                <p>Comments</p> 
+                <input type="text" name="description" id="description" placeholder="Please enter your comments here."> 
+            </div> 
+            <br/> <br/> 
+        </div> 
+        <div class="footer"> 
+            <input type="submit" name="submit" value="Submit" onclick="submitData()"> 
+        </div> 
+    </body> 
+     
+    </html> 

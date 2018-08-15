@@ -1,0 +1,35 @@
+{ 
+    "id": "com.kaizala.feedbackform", 
+    "schemaVersion": 1, 
+    "version": 1,
+    "minorVersion": 1,
+    "providerName": "KaizalaTester", 
+    "displayName": "Feedback Form", 
+    "description": "Custom form to collect feedback.", 
+    "icon": "icon.png", 
+	"appModel": "AppModel.json", 
+	"actionScope":"Group",
+    "views": { 
+		"CreationView": {
+			"labelHeader": "Feedback requested", 
+			"sourceLocation": "ResponseView.html",
+			"showNativeToolbar": true,
+			"backDialogTitle": "Confirmation",
+			"backDialogDescription": "Are you sure you want to discard?" 
+		}, 
+		"ChatCanvasCardView": { 
+			"showHeader": true,
+			"labelResponseSending": "Submitting your feedback",
+			"labelResponded": "You have provided feedback", 
+			"labelResponseFailed": "Feedback submission failed",
+			"isResponseEditable": false,
+			"showLikes" : false,
+			"showComments": false
+		}, 
+		"ResponseResultsView": { 
+			"labelPageHeader": "Feedback summary",
+			"sourceLocation": "SummaryView.html",
+			"showNativeToolbar": true 		
+		} 
+    } 
+}

@@ -1,0 +1,35 @@
+{
+	"id": "com.tambuzi.tracking", 
+	"schemaVersion": 1, 
+	"version": "2",
+	"minorVersion": 4,
+	"providerName": "TambuziApp",
+	"displayName": "Tracking",
+	"description": "Update your flower tracking details", 
+  "icon": "tracking.png",
+  "appModel": "AppModel.json",
+  "dials": {
+    "isLocalised": false,
+    "isPinned": false
+  },
+  "actionScope": "Group",
+  "views": {
+    "ChatCanvasCardView": {
+      "showReceipts": false,
+      "showLikes": false,
+      "showComments": false,
+      "labelResponseSending": "Updating your tracking details",
+      "labelResponseFailed": "Failed to update your tracking details",
+      "labelResponded": "Tracking details updated",
+      "isResponseEditable": false
+    },
+    "CreationView": {
+      "sourceLocation": "Response.html",
+      "showNativeToolbar": false
+    },
+    "ResponseResultsView": {
+      "sourceLocation": "ResponseSummary.html",
+      "showNativeToolbar": false
+    }
+  }
+}

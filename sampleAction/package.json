@@ -1,0 +1,40 @@
+{ 
+    "id": "mawingus.issue.ticketing", 
+    "schemaVersion": 1, 
+    "version": 1,
+    "minorVersion": 33,
+    "providerName": "Mawingus Issue Inc.", 
+    "displayName": "Report Issue", 
+    "description": "Custom action to report mawingu issues.", 
+    "icon": "icon.png", 
+    "appModel": "appModel.json", 
+    "views":{ "CreationView": 
+                {
+                    "labelHeader": "Issue Reporting", 
+                    "sourceLocation": "CreationView.html", 
+                    "backDialogTitle": "Confirmation",
+                    "backDialogDescription": "Are you sure you want to discard?" 
+               
+                },
+                
+                "ChatCanvasCardView": {
+                    "labelResponded": "You have provided feedback.", 
+                    "sourceLocation": "chatCard.json", 
+                    "labelRespondToForm": "CHECK STATUS", 
+                    "isResponseEditable": false  
+                }, 
+                "ResponseView": { 
+                    "labelHeader": "Report Issue",
+                    "sourceLocation": "ResponseView.html", 
+                    "backDialogTitle": "Confirmation",
+                    "backDialogDescription": "Are you sure you want to discard?" 
+                }, 
+                "ResponseResultsView": { 
+                    "labelPageHeader": "Feedback summary",
+                    "sourceLocation": "SummaryView.html",
+                    "backDialogTitle": "Confirmation",
+                    "backDialogDescription": "Are you sure you want to discard?"  
+                }
+            }
+
+    } 

@@ -1,0 +1,375 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="KASClient.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+
+    <script type="text/javascript">
+        var _form; // type: KASForm
+        var _name = "";
+        var _phoneNumber = "";
+        var _questionToAnswerMap = {};
+        var _currentUserInfo = null;
+        var _currentLocation = {};
+        var boxNumber;
+        var placeName;
+        var name;
+        var phone;
+        // Below will be called on onload of CreationView.html
+        function onCreatePageLoad() {
+            document.getElementById("issueFillDiv").style.display = "block";
+            document.getElementById("detailsDiv").style.display = "none";
+            document.getElementById("contents").style.display = "none";
+            KASClient.App.registerHardwareBackPressCallback(function () {
+                KASClient.App.dismissCurrentScreen();
+            });
+            KASClient.App.getCurrentUserIdAsync(function (userId, error) {
+                if (error != null) {
+                    handleError(error);
+                    return;
+                }
+                KASClient.App.getCurrentDeviceLocationAsync(function (location, error) {
+                    if (error != null) {
+                        _isLocationRefreshing = false;
+                        inflateLocationView();
+                        return;
+                    }
+
+                    _currentLocation = JSON.parse(location);
+                });
+                KASClient.App.getUsersDetailsAsync([userId], function (users, error) {
+                    if (error != null) {
+                        handleError(error);
+                        return;
+                    }
+
+                    //asign them to global variables
+                    _currentUserInfo = users[userId];
+                    _name = _currentUserInfo.originalName;
+                    _phoneNumber = _currentUserInfo.phoneNumber;
+                    // inflateDetailsView();
+                });
+            });
+        }
+
+        function pageOne() {
+            //e.preventDefault();
+            document.getElementById("issueFillDiv").style.display = "block";
+            document.getElementById("detailsDiv").style.display = "none";
+            document.getElementById("contents").style.display = "none";
+
+            boxNumber = document.getElementById("boxNumber").value;
+            placeName = document.getElementById("placeName").value;
+
+            // alert(boxNumber);
+            document.getElementById("boxNumber").innerHTML = boxNumber;
+            document.getElementById("placeName").innerHTML = placeName;
+        }
+
+        function pageTwo() {
+            //e.preventDefault();
+            document.getElementById("issueFillDiv").style.display = "none";
+            document.getElementById("detailsDiv").style.display = "block";
+            document.getElementById("contents").style.display = "none";
+            // document.getElementById("detailsViewDiv").innerHTML = "_name";
+            // document.getElementById("phoneViewDiv").innerHTML = "_phoneNumber";
+            document.getElementById("detailsViewDiv").innerHTML = _name;
+            document.getElementById("phoneViewDiv").innerHTML = _phoneNumber;
+
+        }
+
+        function pageTwoTwo() {
+            //e.preventDefault();
+            document.getElementById("issueFillDiv").style.display = "none";
+            document.getElementById("detailsDiv").style.display = "block";
+            document.getElementById("contents").style.display = "none";
+            // <!-- 
+            //             // _name = document.getElementById("detailsViewDiv").value;
+            //             // _phoneNumber = document.getElementById("phoneViewDiv").value; -->
+            document.getElementById("detailsViewDiv").innerHTML = _name;
+            document.getElementById("phoneViewDiv").innerHTML = _phoneNumber;
+
+        }
+
+        function pageThree() {
+            // e.preventDefault();
+            document.getElementById("issueFillDiv").style.display = "none";
+            document.getElementById("detailsDiv").style.display = "none";
+            document.getElementById("contents").style.display = "block";
+
+            boxNumber = document.getElementById("boxNumber").value;
+            placeName = document.getElementById("placeName").value;
+
+            // alert(boxNumber);
+            document.getElementById("boxNumber1").innerHTML = boxNumber;
+            document.getElementById("placeName1").innerHTML = placeName;
+            document.getElementById("name").innerHTML = _name;
+            document.getElementById("phoneNumber").innerHTML = _phoneNumber;
+
+            // document.forms["summaryDiv"]["boxNumberDiv"].value = boxNumber;
+            // document.forms["summaryDiv"]["placeNameDiv"].value = placeName;
+            // document.forms["summaryDiv"]["nameDiv"].value = _name;
+            // document.forms["summaryDiv"]["phoneNumberDiv"].value = _phoneNumber;
+            console.log(placeName);
+        }
+
+        // For submitting response a question-answer 
+        // map is required, lets create that!
+        function submitData() {
+
+            boxNumber = document.getElementById("boxNumber").value;
+            placeName = document.getElementById("placeName").value;
+            name = document.getElementById("detailsViewDiv").value;
+            phone = document.getElementById("phoneViewDiv").value;
+
+            // alert();
+
+            if (boxNumber == null || boxNumber == "") {
+                KASClient.App.showNativeErrorMessage("Please fill Box Number");
+            } else if (placeName == null || placeName == "") {
+                KASClient.App.showNativeErrorMessage("Please fill Box Number");
+            } else {
+                var responseId = null;
+                var isEditingPreviousResponse = false;
+
+                var questionToAnswerMap = JSON.parse("{}");
+
+                questionToAnswerMap[0] = boxNumber;
+                questionToAnswerMap[1] = placeName;
+                questionToAnswerMap[2] = _name;
+                questionToAnswerMap[3] = _phoneNumber;
+                questionToAnswerMap[4] = JSON.stringify(_currentLocation);
+
+                // alert(_name+ " , " + _phoneNumber);
+                KASClient.Form.sumbitFormResponse(questionToAnswerMap, null, false, true, false/* showInChatCanvas */);
+                // alert(questionToAnswerMap);
+            }
+            // KASClient.Form.sumbitFormResponse(_questionToAnswerMap);
+        }
+
+
+
+
+        // document.getElementById("submitForm").addEventListener("submit", submitData);
+		//alert("okay");
+    </script>
+</head>
+<!-- Create the Form Structure -->
+
+<body onload="onCreatePageLoad()">
+    <!-- <div> -->
+    <!-- <form name="fillAllDetails"> -->
+
+    <div id="issueFillDiv" class="body-container">
+        <div>
+            <div id="header">
+                <p style="text-align:center;" class="text-info">TRACKING DETAILS</p>
+            </div>
+            <div style="margin:5%;">
+                <label>Box Number</label>
+                <input class="inputForm" type="text" name="boxNumber" id="boxNumber" style="border-color:rgb;" />
+            </div>
+
+
+            <div style="margin:5%;">
+                <label>Place Name</label>
+                <input class="inputForm" type="text" name="placeName" id="placeName" style="border-color:rgb;" />
+            </div>
+        <!-- </div> -->
+        <!-- <div> -->
+            <footer class="footer">
+                <table style="width: 100%">
+                    <tr>
+                        <!-- <div style="width: 30%;"> -->
+                        <td style="width: 30%">
+                            <input type="submit" name="submit" value="" class="prev1" id="btn" disabled/>
+                        </td>
+                        <td style="width: 30%">
+                            <div class="progressDiv">
+                                <div class="progressInnerDiv">
+                                    <div class="progressText">
+                                        <label>1 of 3</label>
+                                    </div>
+                                    <div class="progressBarOuterDiv">
+                                        <div class="progressBarInnerDiv">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="width: 30%">
+                            <input type="submit" name="submit" value="" onclick="pageTwo()" class="next1" id="btn2" />
+                        </td>
+                    </tr>
+                </table>
+            </footer>
+        </div>
+    </div>
+    <!-- </form> -->
+
+    </div>
+
+    <!-- <form name="detailsForm"> -->
+    <div id="detailsDiv">
+        <div id="header">
+            <p style="text-align:center;" class="text-info">YOUR DETAILS</p>
+        </div>
+        <div style="display: block;">
+            <div class="detailsSection">
+                <p class="detailscomment-header">Name</p>
+                <div>
+                    <p class="detailscomment-input" name="detailsView" id="detailsViewDiv" style="border-color:rgb;"></p>
+                </div>
+            </div>
+
+
+            <div class="detailsSection">
+                <p class="detailscomment-header">Phone Number </p>
+                <div>
+                    <p class="detailscomment-input" name="phoneView" id="phoneViewDiv" style="border-color:rgb;"></p>
+                </div>
+            </div>
+            <footer class="footer">
+                <table style="width: 100%">
+                    <tr>
+                        <!-- <div style="width: 30%;"> -->
+                        <td style="width: 30%">
+                            <input type="submit" name="submit" value="" class="prev1" onclick="pageOne()" id="btn" />
+                        </td>
+                        <td style="width: 30%">
+                            <div class="progressDiv">
+                                <div class="progressInnerDiv">
+                                    <div class="progressText">
+                                        <label>2 of 3</label>
+                                    </div>
+                                    <div class="progressBarOuterDiv">
+                                        <div class="progressBarInnerDiv2">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="width: 30%">
+                            <input type="submit" name="submit" value="" onclick="pageThree()" class="next1" id="btn2" />
+                        </td>
+                    </tr>
+                </table>
+
+            </footer>
+        </div>
+
+
+    </div>
+    <!-- </form> -->
+
+    <div id="contents" id="submitForm1" style="width: 100%; padding-top: 8px">
+        <!-- <form name="summaryDiv" id="submitForm"> -->
+        <div id="header">
+            <p style="text-align:center;" class="text-info">SUMMARY DETAILS</p>
+        </div>
+        <div class="divAttributes">
+            <div class="comment_header" style="padding: 14px; padding-bottom: 0pt;">
+                <label>Box Number</label>
+            </div>
+            <div class="customerNameDetailsView" style="padding: 14px;padding-top: 5pt;">
+                <div class="customerNameDiv">
+                    <p name="boxNumberDiv" id="boxNumber1" style="border-color:rgb;"></p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="divAttributes">
+            <div class="customerPhoneDetailsHeader" style="padding: 14px; padding-bottom: 0pt;">
+                <label>Place Name</label>
+            </div>
+            <div class="comment_header" style="padding: 14px;padding-top: 5pt;">
+                <div class="customerNameDiv">
+                    <p name="placeNameDiv" id="placeName1" style="border-color:rgb;"></p>
+                </div>
+            </div>
+
+        </div>
+        <div class="divAttributes">
+            <div class="customerPhoneDetailsHeader" style="padding: 14px; padding-bottom: 0pt;">
+                <label>Name</label>
+            </div>
+            <div class="comment_header" style="padding: 14px;padding-top: 5pt;">
+                <div class="customerNameDiv">
+                    <p name="nameDiv" id="name" style="border-color:rgb;"></p>
+                </div>
+            </div>
+
+        </div>
+        <div class="divAttributes">
+            <div class="customerPhoneDetailsHeader" style="padding: 14px; padding-bottom: 0pt;">
+                <label>Phone Number</label>
+            </div>
+            <div class="comment_header" style="padding: 14px;padding-top: 5pt;">
+                <div class="customerNameDiv">
+                    <p name="phoneNumberDiv" id="phoneNumber" style="border-color:rgb;"></p>
+                </div>
+            </div>
+            <footer class="footer">
+                <table style="width: 100%">
+                    <tr>
+                        <!-- <div style="width: 30%;"> -->
+                        <td style="width: 30%">
+                            <input type="submit" name="submit2" value="" class="prev1" onclick="pageTwoTwo()" id="btn2" />
+                        </td>
+                        <td style="width: 30%">
+                            <div class="progressDiv">
+                                <div class="progressInnerDiv">
+                                    <div class="progressText">
+                                        <label>3 of 3</label>
+                                    </div>
+                                    <div class="progressBarOuterDiv">
+                                        <div class="progressBarInnerDiv3">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="width: 30%">
+                            <input type="submit" name="submit" value="SUBMIT" onclick="submitData()" class="next2" id="btn2" />
+                        </td>
+                    </tr>
+                </table>
+
+            </footer>
+            <!-- <div style="margin:5%;">
+                    <button type="submit" name="submit" value="SUBMIT" onclick="submitData()" class="btn btn-lg" id="btn">SUBMIT</button>
+                </div> -->
+
+        </div>
+        <!-- </form> -->
+        <!-- </div> -->
+</body>
+
+</html>
+
+
+
+
+<!-- <form name="summaryDiv" id="submitForm">
+                <div>
+                    <label>Box Number</label>
+                    <input type="text" name="boxNumberDiv" id="boxNumber" style="border-color:rgb;"/>
+                </div>
+                <div>
+                    <label>Place Name</label>
+                    <input type="text" name="placeNameDiv" id="placeName" style="border-color:rgb;"/>
+                </div>
+                <div>
+                    <label>Name</label>
+                    <input type="text" name="nameDiv" id="name" style="border-color:rgb;"/>
+                </div>
+                <div>
+                    <label>Phone Number</label>
+                    <input type="text" name="phoneNumberDiv" id="phoneNumber" style="border-color:rgb;"/>
+                </div>
+                <div style="margin:5%;">
+                    <button type="submit" name="submit" value="SUBMIT" onclick="submitData()" class="btn btn-lg" id="btn">SUBMIT</button>
+                </div>
+            </form> 
+    </div> -->

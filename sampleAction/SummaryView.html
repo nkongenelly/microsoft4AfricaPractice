@@ -1,0 +1,148 @@
+<html> 
+
+  <head> 
+      <title></title> 
+      <script type="text/javascript" src="KASClient.js"></script> 
+      <link rel="stylesheet" href="bootstrap.min.css">
+      <style>
+      .container {
+          margin: 2px;
+      }
+      </style>
+      <script type="text/javascript"> 
+          // Globals 
+          var _form; // type: KASForm 
+          var _fetchResult;
+            // Globals
+          var _form; // type: KASForm
+          var _myFormResponses; // type: KASFormResponse[]
+          var _formSummary; // type: KASFormFlatSummary
+          var _users; // type: Dictionary<UserId: KASUser>
+
+          // Below will be called on onload of SummaryView.html
+          function onSummaryPageLoad() {
+              KASClient.Form.getFormAsync(function (form, error) {
+                 if (error != null) {
+                    KASClient.App.showNativeErrorMessage("Error:getFormAsync:" + error);
+                    return;
+                 }
+                 _form = form;
+                 KASClient.App.showProgressBar("Fetching summary");
+                 KASClient.Form.getFormSummaryAsync(
+                    function (flatSummary, processedSummary, error) { // In this callback data is fetched from local database
+                       if (error != null) {
+                          KASClient.App.showNativeErrorMessage("Error:getFormSummaryAsync:callback1:" + error);
+                          return;
+                       }
+                       onGetSummary(flatSummary);
+                    },
+                    function (flatSummary, processedSummary, error) { // In this callback data is fetched from server
+                       KASClient.App.hideProgressBar();
+                       if (error != null) {
+                          KASClient.App.showNativeErrorMessage("Error:getFormSummaryAsync:callback2:" + error);
+                          return;
+                       }
+                       onGetSummary(flatSummary);
+                    }
+                 );
+              });
+           }
+
+           function onGetSummary(summary) {
+              KASClient.App.showProgressBar("Fetching summary");
+              _formSummary = summary;
+              KASClient.App.getUsersDetailsAsync(_formSummary.getRespondedUserIds(), function (users,
+                 error) {
+                 if (error != null) {
+                    KASClient.App.showNativeErrorMessage("Error:getUsersDetailsAsync:" + error);
+                    return;
+                 }
+                 _users = users;  // Document title would be the form title
+
+                 document.getElementById("title").innerHTML = _form.title;
+
+                 // Get all responses of the user, and find the average
+                //  var fullName;
+                //  var phone;
+                //  var region;
+                //  var area;
+                //  var issue;
+                //  var details;
+                 document.getElementById("feedbacktext").innerHTML = '';
+                    var userResponses = _formSummary.getResponsesForUserId(_users); // type: Dictionary<QuestionId, string[]>
+                    // fullName = parseInt(userResponses["0"][0]);
+                    // phone = parseInt(userResponses["0"][1]);
+                    // region = parseInt(userResponses["0"][2]);
+                    // area = parseInt(userResponses["0"][3]);
+                    // issue = parseInt(userResponses["0"][4]);
+                    // details = parseInt(userResponses["0"][5 ]);
+                    document.getElementById("fullName").innerHTML += userResponses["0"][0] + '<br/>';
+                    document.getElementById("phone").innerHTML += userResponses["1"][0] + '<br/>';
+                    document.getElementById("region").innerHTML += userResponses["2"][0] + '<br/>';
+                    document.getElementById("area").innerHTML += userResponses["3"][0] + '<br/>';
+                    document.getElementById("issue").innerHTML += userResponses["4"][0] + '<br/>';
+                    document.getElementById("details").innerHTML += userResponses["5"][0] + '<br/>';
+
+                 //document.getElementById("avg").innerHTML = totalRating / responseCount;
+                 KASClient.App.hideProgressBar();
+              });
+           }
+
+// <!-- 
+//           function onSummaryPageLoad() { 
+//               KASClient.App.showProgressBar("Fetching Results");           
+//               KASClient.Form.getFormAsync(function (form, error) {                
+//                  if (error != null) {                    
+//                     KASClient.App.showNativeErrorMessage("Error:getFormAsync:" + error);                    
+//                     return;                
+//                  }                
+//                  _form = form;
+                 
+//               });  
+
+//                 //_fetchResult = Form.properties[jsonResult].value;
+//                //var myJson = JSON.parse(_fetchResult);
+
+//             //    if((myJson == null) || (myJson == "") ){
+//             //     document.getElementById("contents").innerHTML = "Sorry check later";
+//             //    }
+//             //    else{
+//                var card = '';
+//                var startCard = '<div class="card card-block mb-3" style="background-color:#c0cfc8"><div class="container-fluid"><div class="row no-gutters"><div class="col py-3">';
+//                var endCard =  '</div> </div> </div> </div>';
+
+//                //for(cardIndex in myJson){
+//                    card += startCard + '<p class="card-title"> Customer name: Nelly</p>';
+//                    card += startCard + '<p class="card-text"> Issue: Connectivity</p>';
+//                    card += '<p class="text-info card-text"> Contact: +254715416545</p>';
+//                    card += '<p class="text-info card-text"> Status: In Progress</p>';
+//                    //card += '<a href="#" class="btn btn-outline-success btn-block">View</a>';
+                  
+//                //}
+//                card += endCard;
+//                KASClient.App.hideProgressBar();
+//                document.getElementById("contents").innerHTML = card;
+//             //}
+                   
+//            } -->
+
+        
+        
+      </script> 
+  </head> 
+
+  <body onload="onSummaryPageLoad()" > 
+    <!-- <div id="contents"></div> -->
+    <div class="header">
+            <h1 id="title">Case Status</h1>
+            <br/>
+            <p id="fullName"></p>
+            <p id="phone"></p>
+            <p id="region"></p>
+            <p id="area"></p>
+            <p id="issue"></p>
+            <p id="details"></p>
+        </div>
+  </body> 
+
+  </html>

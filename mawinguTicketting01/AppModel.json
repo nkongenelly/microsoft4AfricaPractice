@@ -1,0 +1,51 @@
+{
+    "questions": [{
+            "title": "Customer Name",
+            "type": "Numeric"
+        },
+        {
+            "title": "Customer Phone",
+            "type": "Text"
+        },
+        {
+            "title": "Customer Type",
+            "type": "Text"
+        },
+        {
+            "title": "Department",
+            "type": "Text"
+        },
+        {
+            "title": "Region",
+            "type": "Text"
+        },
+        {
+            "title": "Area",
+            "type": "Text"
+        },
+        {
+            "title": "Issue",
+            "type": "Text"
+        },
+        {
+            "title": "Issue Details",
+            "type": "Text"
+        },
+        {
+            "title": "Commando",
+            "type": "Text"
+        },
+        {
+            "title": "Comments",
+            "type": "Text"
+        },
+        {
+            "title": "Comments",
+            "type": "Text"
+        }
+    ],
+    "title": "Ask for feedback",
+    "visibility": "All",
+    "isAnonymous": false,
+    "isResponseAppended": false
+}

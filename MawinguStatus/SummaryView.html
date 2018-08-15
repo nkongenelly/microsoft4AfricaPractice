@@ -1,0 +1,145 @@
+<html>
+
+<head>
+    <title></title>
+    <link rel="stylesheet" href="bootstrap.min.css">
+    <script type="text/javascript" src="KASClient.js"></script>
+    <script type="text/javascript">
+        // Globals 
+        var _form; // type: KASForm 
+        var _fetchResult;
+        var customerName;
+        var customerPhone;
+        var customerType;
+        var department;
+        var region;
+        var area;
+        var issue;
+        var details;
+        var methods = ["GET", "POST"];
+        var baseUrl = "https://nanyukiaf-mawingu-api.azurewebsites.net/";
+
+        // Below will be called on onload of SummaryView.html 
+        function createObject(readyStateFunction, requestMethod, requestUrl, sendData = null) {
+
+            var obj = new XMLHttpRequest;
+
+            obj.onreadystatechange = function() {
+                if ((this.readyState == 4) && (this.status == 200)) {
+                    readyStateFunction(this.responseText);
+                }
+
+            };
+            obj.open(requestMethod, requestUrl, true);
+            if (requestMethod == 'POST') {
+
+                obj.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                obj.setRequestHeader("X-CSRF-Token", document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                obj.send(sendData);
+            } else {
+                obj.send();
+            }
+        }
+
+        function onSummaryPageLoad() {
+
+            KASClient.App.registerHardwareBackPressCallback(function() {
+                KASClient.App.dismissCurrentScreen();
+            });
+
+            KASClient.App.showProgressBar("Fetching Results");
+            KASClient.Form.getFormAsync(function(form, error) {
+                if (error != null) {
+                    KASClient.App.showNativeErrorMessage("Error:getFormAsync:" + error);
+                    return;
+                }
+                _form = form;
+                showSummary();
+                createObject(getStatus, methods[0], baseUrl + "getStatus")
+
+            });
+        }
+
+
+
+        function showSummary() {
+
+
+            customerName = _form.questions[0].title;
+            customerPhone = _form.questions[2].title;
+            customerType = _form.questions[1].title;
+            department = _form.questions[3].title;
+            region = _form.questions[4].title;
+            area = _form.questions[5].title;
+            issue = _form.questions[6].title;
+            details = _form.questions[7].title;
+
+            // customerName = "Nelly N.";
+            // customerPhone = "0712345678";
+            // customerType = "Enterprise";
+            // department = "Technical";
+            // region = "Nanyuki";
+            // area = "Town";
+            // issue = "Connectivity";
+            // details = "Low signal";
+            var card = '';
+            console.log(customerName);
+            var startCard = '<div class="card card-block mb-3 card-header" style="background-color:#c0cfc8"><div class="container-fluid"><div class="row no-gutters"><div class="col py-3">';
+            var endCard = '</div> </div> </div> </div>';
+
+            card += startCard + '<p class="card-title"> Customer name: ' + customerName + '</p>' +
+                '<p class="card-text"> Contact: ' + customerPhone + '</p>' +
+                '<p class="card-text"> Customer type: ' + customerType + '</p>' +
+                '<p class="card-text"> Owner: ' + department + '</p>' +
+                '<p class="card-text"> Issue: ' + issue + '</p>' +
+                '<p class="text-info card-text"> Description: ' + details + '</p>' +
+                '<p class="text-info card-text"> Region: ' + region + '</p>' +
+                '<p class="text-info card-text"> Area: ' + area + '</p>' +
+                endCard;
+            //console.log(customerName);
+            // KASClient.App.hideProgressBar();
+            document.getElementById("contents").innerHTML = card;
+        }
+        // card += startCard + '<p class="card-title"> Customer name: Nelly</p>' +
+        //     '<p class="card-text"> Contact:  0712345678</p>' +
+        //     '<p class="card-text"> Customer type: Enterprise</p>' +
+        //     '<p class="card-text"> Owner: Techncal</p>' +
+        //     '<p class="card-text"> Issue: Network</p>' +
+        //     '<p class="text-info card-text"> Description: Weak</p>' +
+        //     '<p class="text-info card-text"> Region: Nanyuki</p>' +
+        //     '<p class="text-info card-text"> Area: Town</p>' +
+        //     '<p class="text-info card-text"> Status: In Progress</p>' +
+        //     endCard;
+        //// KASClient.App.hideProgressBar();
+        // document.getElementById("contents").innerHTML = card;
+        //}
+
+        function getStatus(responseTxt) {
+            var card1 = '';
+            if (responseTxt == null || responseTxt == "") {
+                card1 += 'status not updated';
+            } else {
+                responseObj = JSON.parse(responseTxt);
+                console.log(responseObj);
+
+
+                var startCard1 = '<div class="card card-block mb-3 card-header" style="background-color:#c0cfc8"><div class="container-fluid"><div class="row no-gutters"><div class="col py-3">';
+                var endCard1 = '</div> </div> </div> </div>';
+
+                card1 += startCard1 + '<p class="card-title"> Case No : ' + responseObj[0].caseNo + '</p>' +
+                    '<p class="card-text"> Status Date : ' + responseObj[0].datess + '</p>' +
+                    '<p class="card-text"> Case Status : ' + responseObj[0].status + '</p>' +
+                    '<p class="card-text"> Case Description : ' + responseObj[0].description + '</p>' +
+                    endCard1;
+            }
+        }
+    </script>
+</head>
+
+<body onload="onSummaryPageLoad()">
+    <div id="contents"></div>
+    <div id="status"></div>
+</body>
+
+
+</html>

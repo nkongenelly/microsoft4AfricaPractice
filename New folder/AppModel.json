@@ -1,0 +1,33 @@
+{
+  "title": "Bouquet Details",
+  "visibility": "All",
+  "expiry": 0,
+  "isAnonymous": false,
+  "isResponseAppended": true,
+  "isLocationRequested": false,
+  "questions": [{
+      "title": "Bouquet Number",
+      "type": "Text"
+    },
+    {
+      "title": "Bouquet Packs",
+      "type": "Text"
+    },
+    {
+      "title": "Name",
+      "type": "Text"
+    },
+    {
+      "title": "Phone No",
+      "type": "Text"
+    },
+    {
+      "title": "Location",
+      "type": "Location"
+    },
+    {
+      "title": "Response Time",
+      "type": "DateTime"
+    }
+  ]
+}

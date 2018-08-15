@@ -1,0 +1,314 @@
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <title></title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, sans-serif;
+    }
+
+    b {
+      font-weight: 600
+    }
+
+    .first-column {
+      white-space: nowrap;
+    }
+
+    .comment-header {
+      padding: 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #6f7e8f;
+    }
+
+    img {
+      object-fit: cover;
+      overflow: hidden;
+    }
+
+    img.hover-shadow {
+      transition: 0.3s
+    }
+
+    .cursor {
+      cursor: pointer
+    }
+
+    .hover-shadow:hover {
+      box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)
+    }
+
+    .location-image {
+      width: 100%;
+      max-height: 180px;
+      object-fit: contain;
+      margin-bottom: "12px"
+    }
+
+    .location-address {
+      font-size: 16px;
+      padding: 12px;
+      padding-top: 0px;
+      font-weight: normal;
+      color: #32495f;
+      float: left;
+    }
+  </style>
+</head>
+<body onload="onPageLoad()">
+  <div id="header">
+    <div id="mainText"></div>
+    <div id="subText"></div>
+  </div>
+  <div class="section">
+    <div class="body-container">
+      <div id = "details" style ="padding-top: 50px" >
+        <!-- display bouquet packs number -->
+        <div id="bouquetNumberDetailsDiv" style="background-color:white; color: #32485f;
+          font-size: 13.5pt; margin: 16px; margin-top: 8px; margin-bottom: 8px; box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.12);
+          border-radius: 4px">
+          <div id="bouquetNumberDetailsHeader" class="comment-header" style="padding: 14px; padding-bottom: 0pt"></div>
+          <div id="bouquetNumberDetailsView" style="padding: 14px; padding-top:5pt">
+            <div id="bouquetNumber" style="color: #32485f; font-size: 12pt; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word"></div>
+          </div>
+        </div>
+        <!-- display bouquet packs -->
+        <div id = "bouquetPacksDiv" style = "background-color:white; color: #32485f;
+          font-size: 13.5pt; margin: 16px; margin-top: 8px; margin-bottom: 8px; box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.12);
+          border-radius: 4px">
+          <div id="bouquetPacksHeader" class="comment-header" style="padding: 14px; padding-bottom: 0pt"></div>
+          <div id = "bouquetPacksView" style = "padding: 14px; padding-top:5pt">
+            <div id = "bouquetPacks" style =  "color: #32485f; font-size: 12pt; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word"></div>
+          </div>
+        </div>
+        <!-- display persons details -->
+        <div id = "detailsDiv" style = "background-color:white; color: #32485f;
+          font-size: 13.5pt; margin: 16px; margin-top: 8px; margin-bottom: 8px; box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.12);
+          border-radius: 4px">
+          <div id = "detailsHeader" class="comment-header" style="padding: 14px; padding-bottom: 0pt"></div>
+          <div id = "detailsView" style = "padding: 14px; padding-top:5pt">
+            <div id = "nameDetails" style = "color: #32485f; font-size: 12pt; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word"></div>
+            <div id = "nameDetailsValue" style = "color: #32485f; font-size: 12pt; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word"></div>
+            <div id = "phoneDetails" style = "color: #32485f; font-size: 12pt; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word"></div>
+            <div id = "phoneDetailsValue" style = "color: #32485f; font-size: 12pt; overflow-wrap: break-word; word-wrap: break-word; word-break: break-word"></div>
+          </div>
+        </div>
+        <!-- display map -->
+        <div id = "locationDetailsDiv" style = "background-color:white; color: #32485f;
+          font-size: 13.5pt; margin: 16px; margin-top: 8px; margin-bottom: 8px; box-shadow: 0px 0px 1px 0px rgba(0,0,0,0.12);
+          border-radius: 4px">
+          <div id = "locationDetailsHeader" class="comment-header" style="padding: 14px; padding-bottom: 0pt"></div>
+          <img id = "locationMapView" class = "location-image">
+          <div id = "locationAddressRefreshDiv" style = "display: inline-flex">
+            <div id = "locationAddressDiv" style = "float: left; display: flex; flex-direction: column; width: 100%">
+              <label id = "location-address" class = "location-address" style = "padding-top:12p "></label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script type="text/javascript" src="KASClient.js"></script>
+  <script>
+    // Type aliases (short names)
+    var KASFormPageNavigator = KASClient.UI.KASFormPageNavigator;
+    var KASFormPage = KASClient.UI.KASFormPage;
+    var KASFormEmptyModule = KASClient.UI.KASFormEmptyModule;
+    var KASFormDetailsModule = KASClient.UI.KASFormDetailsModule;
+    var KASFormImageTitleSubtitleActionModule = KASClient.UI.KASFormImageTitleSubtitleActionModule;
+    var printf = KASClient.App.printf;
+
+    // Globals
+    var _form = null; // type: KASForm
+    var _myFormResponses; // type: Array<KASFormResponse>
+    var _creatorInfo; // type: KASUser
+    var _conversationName; // type: string
+    var _currentUserId; // type: string
+    var _pageNavigator = null; // type: KASFormPageNavigator
+    var _strings = null;
+
+    // Question index
+    var BOUQUET_NUMBER = 0;
+    var BOUQUET_PACKS = 1;
+    var NAME = 2;
+    var PHONE_NUMBER = 3;
+    var LOCATION = 4;
+    var TIME = 5;
+
+    var _postalCode = "";
+    var _district = "";
+    var _longAddress = "";
+    var _shortAddress = "";
+
+    function inflateHeader() {
+      // Display header
+      var navigationBar = new KASClient.UI.KASFormPageNavigationBar();
+
+      navigationBar.iconPath = "bouquet.png";
+
+      mainText.innerText = _strings["strMiniAppTitle"];
+
+      navigationBar.title = mainText.outerHTML;
+      var time = new Date(parseFloat(_myFormResponses.questionToAnswerMap[TIME]));
+      subText.innerText = printf(_strings["strMiniAppHeaderTimeLabel"], KASClient.getDateString(time, false, true));
+      navigationBar.subtitle = subText.outerHTML;
+
+      navigationBar.backAction = function () {
+        KASClient.App.dismissCurrentScreen();
+      };
+
+      KASClient.UI.addElement(navigationBar.getView(), header);
+    }
+
+    function showError(errorMsg) {
+      KASClient.App.showNativeErrorMessage(errorMsg);
+    }
+
+    function onPageLoad() {
+      // Global error handling
+      window.onerror = function (msg, url, line, col, error) {
+        // col & error are new to the HTML 5, so handling for them
+        var extra = (!col && col !== undefined) ? "" : "#column:" + col;
+        extra += (!error && error !== undefined) ? "" : "#error:" + error.stack;
+        var error = "Error:" + msg + "#url:" + url + "#line:" + line + extra;
+        KASClient.App.logError(error);
+      };
+
+      KASClient.App.getLocalizedStringsAsync(function (strings, error) {
+        if (error != null) {
+          showAlert("Error:GetFormAsync:" + error);
+          return;
+        }
+        _strings = strings;
+        KASClient.Form.getFormAsync(function (form, error) {
+          if (error != null) {
+            handleError(error);
+            return;
+          }
+          _form = form;
+          KASClient.App.getCurrentUserIdAsync(function (userId, error) {
+            if (error != null) {
+              handleError(error);
+              return;
+            }
+            _currentUserId = userId;
+            KASClient.Form.getMyFormResponsesAsync(function (responses, error) {
+              if (error != null) {
+                handleError(error);
+                return;
+              }
+              _myFormResponses = responses[0];
+
+              KASClient.App.getUsersDetailsAsync([_currentUserId], function (users, error) {
+                if (error != null) {
+                  handleError(error);
+                  return;
+                }
+                _creatorInfo = users[_currentUserId];
+                KASClient.App.getConversationNameAsync(function (name, error) {
+                  if (error != null) {
+                    handleError(error);
+                    return;
+                  }
+                  _conversationName = name;
+                  showSummaryPage();
+                });
+              });
+            });
+          });
+        });
+      });
+    }
+
+    //summary page
+    function inflateResponses() {
+      document.body.style.backgroundColor = "#f2f2f2";
+
+      //Bouquet Number
+      var bouquetNumberDetailsHeader = document.getElementById("bouquetNumberDetailsHeader");
+      KASClient.UI.clearElement(bouquetNumberDetailsHeader);
+      bouquetNumberDetailsHeader.innerText = _strings[_form.questions[BOUQUET_NUMBER].title];
+
+      var bouquetNumber = document.getElementById("bouquetNumber");
+      KASClient.UI.clearElement(bouquetNumber);
+      bouquetNumber.innerHTML = _myFormResponses.questionToAnswerMap[BOUQUET_NUMBER];
+
+      // Bouquet Packs
+      var bouquetPacksHeader = document.getElementById("bouquetPacksHeader");
+      KASClient.UI.clearElement(bouquetPacksHeader);
+      bouquetPacksHeader.innerText = _strings[_form.questions[BOUQUET_PACKS].title];
+
+      var bouquetPacks = document.getElementById("bouquetPacks");
+      KASClient.UI.clearElement(bouquetPacks);
+      bouquetPacks.innerHTML = _myFormResponses.questionToAnswerMap[BOUQUET_PACKS];
+
+      // Personal Details Summary
+      var detailsHeader = document.getElementById("detailsHeader");
+      detailsHeader.innerText = _strings["strMiniAppYourDetails"];
+
+      var nameDetails = document.getElementById("nameDetails");
+      var phoneDetailsValue = document.getElementById("nameDetailsValue");
+      nameDetails.innerHTML = _strings[_form.questions[NAME].title];
+      nameDetailsValue.innerHTML =  _myFormResponses.questionToAnswerMap[NAME];
+
+      var phoneDetails = document.getElementById("phoneDetails");
+      var phoneDetailsValue = document.getElementById("phoneDetailsValue");
+      phoneDetails.innerHTML = _strings[_form.questions[PHONE_NUMBER].title];
+      phoneDetailsValue.innerHTML =  _myFormResponses.questionToAnswerMap[PHONE_NUMBER];
+
+      var locationDetailsHeader = document.getElementById("locationDetailsHeader");
+      locationDetailsHeader.innerText = _strings[_form.questions[LOCATION].title];
+    }
+
+    function showSummaryPage() {
+
+      inflateHeader();
+      inflateResponses();
+      inflateLocation()
+    }
+
+    function inflateLocation() {
+      //location map view
+      _currentLocation = JSON.parse(_myFormResponses.questionToAnswerMap[LOCATION]);
+
+      var locationMapView = document.getElementById("locationMapView");
+      if (!(_currentLocation["lt"] == 0.0 && _currentLocation["lg"] == 0.0)) {
+        locationMapView.src =
+          "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=360x170&maptype=roadmap&markers=color:blue%7C%7C" +
+          _currentLocation["lt"] + "," + _currentLocation["lg"];
+      } else {
+        locationMapView.style.display = "none";
+      }
+      locationMapView.onerror = function (event) {
+        event.target.style.display = "none";
+      }
+      var locationAddress = KASClient.UI.getElement("locationAddress");
+      locationAddress.innerText = _currentLocation["n"];
+
+      var locationAddress = document.getElementById("locationAddress");
+      if (!(_currentLocation["lt"] == 0.0 && _currentLocation["lg"] == 0.0))
+        locationAddress.style.paddingTop = "12px";
+
+      var locationAddressRefreshDiv = document.getElement("locationAddressRefreshDiv");
+      locationAddress.innerHTML = _currentLocation["n"];
+
+      return locationViewDiv;
+    }
+
+    function showError(errorMsg) {
+      hideProgressBar();
+      KASClient.App.showNativeErrorMessage(errorMsg);
+    }
+
+    function dismissCurrentScreen() {
+      KASClient.App.dismissCurrentScreen();
+    };
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+{ 
+    "questions": [{ 
+            "title": "Rating", 
+            "type": "Numeric" 
+        }, 
+        { 
+            "title": "Comments", 
+            "type": "Text" 
+        } 
+    ], 
+    "title": "August 1, 2018 Conference", 
+    "visibility": "All", 
+    "isAnonymous": false, 
+    "isResponseAppended": false 
+}

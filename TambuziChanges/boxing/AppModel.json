@@ -1,0 +1,41 @@
+{
+  "title": "Boxing Details",
+  "visibility": "All",
+  "expiry": 0,
+  "isAnonymous": false,
+  "isResponseAppended": true,
+  "isLocationRequested": false,
+  "questions": [{
+      "title": "Box Number",
+      "type": "Text"
+    },
+    {
+      "title": "Boxed By",
+      "type": "Text"
+    },
+    {
+      "title": "Box Date",
+      "type": "Datetime"
+    },
+    {
+      "title": "Box Packs",
+      "type": "Text"
+    },
+    {
+      "title": "Name",
+      "type": "Text"
+    },
+    {
+      "title": "Phone No",
+      "type": "Text"
+    },
+    {
+      "title": "Location",
+      "type": "Location"
+    },
+    {
+      "title": "Response Time",
+      "type": "DateTime"
+    }
+  ]
+}

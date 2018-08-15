@@ -1,0 +1,57 @@
+{
+    "title": "Customer Details",
+    "visibility": "All",
+    "expiry": 0,
+    "isAnonymous": false,
+    "isResponseAppended": true,
+    "isLocationRequested": false,
+    "questions": [{
+            "title": "Customer Name",
+            "type": "Text"
+        },
+        {
+            "title": "Customer Phone",
+            "type": "Text"
+        },
+        {
+            "title": "Customer Type",
+            "type": "Text"
+        },
+        {
+            "title": "Department",
+            "type": "Text"
+        },
+        {
+            "title": "Region",
+            "type": "text"
+        },
+        {
+            "title": "Area",
+            "type": "Text"
+        },
+        {
+            "title": "Issue",
+            "type": "Text"
+        },
+        {
+            "title": "Issue Details",
+            "type": "text"
+        },
+        {
+            "title": "Name",
+            "type": "Text"
+        },
+        {
+            "title": "Phone No",
+            "type": "Text"
+        },
+        {
+            "title": "Location",
+            "type": "Location"
+        },
+        {
+            "title": "Response Time",
+            "type": "DateTime"
+        }
+    ]
+}

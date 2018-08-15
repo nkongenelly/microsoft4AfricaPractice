@@ -1,0 +1,54 @@
+<html>
+
+  <head>
+      <title></title>
+      <script type="text/javascript" src="KASClient.js"></script>
+      <script type="text/javascript">
+          // Globals
+          var _form; // type: KASForm
+
+          // Below will be called on onload of SummaryView.html
+          function onSummaryPageLoad() {
+              KASClient.Form.getFormAsync(function (form, error) {
+                 if (error != null) {
+                    KASClient.App.showNativeErrorMessage("Error:getFormAsync:" + error);
+                    return;
+                 }
+                 _form = form;
+
+                // Update the title in the form
+                document.getElementById("title").innerText = _form.title;
+
+                KASClient.Form.getMyFormResponsesAsync(function(response, error){
+                    if (error != null) {
+                          KASClient.App.showNativeErrorMessage("Error fetching response - " + error);
+                          return;
+                       }
+                    
+                    // Fetch rating and feedback from questionToAnswerMap in response object
+                    var rating = response[0].questionToAnswerMap[0];
+                    var feedback = response[0].questionToAnswerMap[1];
+
+                    // Render the answer on the UI
+                    document.getElementById("rating").innerHTML = rating;
+                    document.getElementById("feedbacktext").innerHTML = feedback;
+                    })
+              });
+           }
+           
+      </script>
+  </head>
+
+  <body onload="onSummaryPageLoad()">
+      <div class="header">
+          <h1 id="title">Title</h1>
+          <br/>
+          <h2 id="ratingHeading">Rating</h2>
+          <p id="rating"></p>
+          <br/>
+          <h2 id="feedback">Verbatim Feedback</h2>
+          <p id="feedbacktext"></p>
+      </div>
+  </body>
+
+  </html>

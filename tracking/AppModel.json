@@ -1,0 +1,29 @@
+{
+    "questions": [
+        
+        {
+            "title": "Box Number",
+            "type": "Text"
+        },
+        {
+            "title": "Place Name",
+            "type": "Text"
+        },
+        {
+            "title": "Name",
+            "type": "Text"
+        },
+        {
+            "title": "Phone",
+            "type": "Text"
+        },
+        {
+            "title": "Location",
+            "type": "Text"
+        }
+    ],
+    "title": "Ask for feedback",
+    "visibility": "All",
+    "isAnonymous": false,
+    "isResponseAppended": false
+}

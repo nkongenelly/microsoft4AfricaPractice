@@ -1,0 +1,37 @@
+{
+    "id": "nelly.mawingu.tickets",
+    "schemaVersion": 1,
+    "version": 2,
+    "minorVersion": 7,
+    "providerName": "TestingNanyukiAf Tester",
+    "displayName": "Mawingu Ticketing Reporting",
+    "description": "Custom action to collect feedback.",
+    "icon": "icon.png",
+    "appModel": "AppModel.json",
+    "actionScope": "Group",
+    "views": {
+        "CreationView": {
+            "labelHeader": "Feedback requested",
+            "sourceLocation": "Response.html",
+            "showNativeToolbar": true,
+            "backDialogTitle": "Confirmation",
+            "backDialogDescription": "Are you sure you want to discard?"
+        },
+        "ChatCanvasCardView": {
+            "showHeader": true,
+            "showExpiry": true,
+            "showResponseCount": true,
+            "labelResponseSending": "Submitting your feedback",
+            "labelResponded": "You have provided feedback",
+            "labelResponseFailed": "Feedback submission failed",
+            "labelRespondToForm": "CONFIRM FEEDBACK",
+            "sourceLocation": "chartCard.json",
+            "isResponseEditable": true
+        },
+        "ResponseResultsView": {
+            "labelPageHeader": "Feedback summary",
+            "sourceLocation": "SummaryView.html",
+            "showNativeToolbar": true
+        }
+    }
+}

@@ -1,0 +1,106 @@
+{
+  "title": "Customer Details",
+  "visibility": "All",
+  "expiry": 0,
+  "isAnonymous": false,
+  "isResponseAppended": true,
+  "isLocationRequested": false,
+  "questions": [{
+      "title": "Customer Name",
+      "type": "Text"
+    },
+    {
+      "title": "Customer Phone",
+      "type": "Text"
+    },
+    {
+      "title": "Customer Type",
+      "type": "SingleSelect",
+      "options": [{
+          "title": "Customer Type Option1"
+        },
+        {
+          "title": "Customer Type Option2"
+        },
+        {
+          "title": "Customer Type Option3"
+        }
+      ]
+    },
+
+    {
+      "title": "Department",
+      "type": "SingleSelect",
+      "options": [{
+          "title": "Department Option1"
+        },
+        {
+          "title": "Department Option2"
+        },
+        {
+          "title": "Department Option3"
+        },
+        {
+          "title": "Department Option4"
+        },
+        {
+          "title": "Department Option5"
+        }
+      ]
+    },
+    {
+      "title": "Region",
+      "type": "SingleSelect",
+      "options": [{
+          "title": "Region Option1"
+        },
+        {
+          "title": "Region Option2"
+        },
+        {
+          "title": "Region Option3"
+        },
+        {
+          "title": "Region Option4"
+        },
+        {
+          "title": "Region Option5"
+        }
+      ]
+    },
+
+
+    {
+      "title": "Area",
+      "type": "Text"
+    },
+    {
+      "title": "Issue",
+      "type": "Text"
+    },
+    {
+      "title": "Issue Details",
+      "type": "Text"
+    },
+    {
+      "title": "Name",
+      "type": "Text"
+    },
+    {
+      "title": "Phone No",
+      "type": "Text"
+    },
+    {
+      "title": "Location",
+      "type": "Location"
+    },
+    {
+      "title": "Response Time",
+      "type": "DateTime"
+    },
+    {
+      "title": "Customer",
+      "type": "Text"
+    }
+  ]
+}

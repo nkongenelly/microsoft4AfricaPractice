@@ -1,0 +1,37 @@
+{
+  "title": "Tracking Details",
+  "visibility": "All",
+  "expiry": 0,
+  "isAnonymous": false,
+  "isResponseAppended": true,
+  "isLocationRequested": false,
+  "questions": [{
+      "title": "Tracking Date",
+      "type": "Datetime"
+    },
+    {
+      "title": "Tracking Location",
+      "type": "Text"
+    },
+    {
+      "title": "Delivery Location",
+      "type": "Text"
+    },
+    {
+      "title": "Name",
+      "type": "Text"
+    },
+    {
+      "title": "Phone No",
+      "type": "Text"
+    },
+    {
+      "title": "Location",
+      "type": "Location"
+    },
+    {
+      "title": "Response Time",
+      "type": "DateTime"
+    }
+  ]
+}

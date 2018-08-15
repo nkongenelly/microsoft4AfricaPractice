@@ -1,0 +1,41 @@
+{
+  "title": "Picking Details",
+  "visibility": "All",
+  "expiry": 0,
+  "isAnonymous": false,
+  "isResponseAppended": true,
+  "isLocationRequested": false,
+  "questions": [{
+      "title": "Pick Number",
+      "type": "Text"
+    },
+    {
+      "title": "Bed Number",
+      "type": "Text"
+    },
+    {
+      "title": "Pick Date",
+      "type": "Datetime"
+    },
+    {
+      "title": "Flower Pack Image",
+      "type": "Image"
+    },
+    {
+      "title": "Name",
+      "type": "Text"
+    },
+    {
+      "title": "Phone No",
+      "type": "Text"
+    },
+    {
+      "title": "Location",
+      "type": "Location"
+    },
+    {
+      "title": "Response Time",
+      "type": "DateTime"
+    }
+  ]
+}

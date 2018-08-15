@@ -1,0 +1,41 @@
+{
+  "title": "Worker Profile",
+  "visibility": "All",
+  "expiry": 0,
+  "isAnonymous": false,
+  "isResponseAppended": true,
+  "isLocationRequested": false,
+  "questions": [{
+      "title": "Employee Number",
+      "type": "Text"
+    },
+    {
+      "title": "Preferred Name",
+      "type": "Text"
+    },
+    {
+      "title": "My Information",
+      "type": "Text"
+    },
+    {
+      "title": "My Photo",
+      "type": "Image"
+    },
+    {
+      "title": "Name",
+      "type": "Text"
+    },
+    {
+      "title": "Phone No",
+      "type": "Text"
+    },
+    {
+      "title": "Location",
+      "type": "Location"
+    },
+    {
+      "title": "Response Time",
+      "type": "DateTime"
+    }
+  ]
+}

@@ -1,0 +1,1174 @@
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title></title>
+    <link rel="stylesheet" href="styles.css"/>   
+    <script type="text/javascript" src="KASClient.js"></script>
+    <script type="text/javascript">
+        // Type aliases (short names)
+        var printf = KASClient.App.printf;
+
+        var _form; // type: KASForm
+//variables to capture the details we fill in 
+        var _customerNameQuestion = "";
+        var _customerPhoneQuestion = "";
+        var _customerTypeQuestion = "";
+        var _departmentQuestion = "";
+        var _regionQuestion = "";
+        var _areaQuestion = "";
+        var _issueQuestion = "";
+        var _issueDetailsQuestion = "";
+        var _name = "";
+        var _phoneNumber = "";
+        var _currentLocation = {};
+
+        var _currentPage = 1;
+        //then we use JS to chasge to the next page
+        var _isLocationRefreshing = false;
+        //if refreshing is true, won't be able to go to next page
+        var _strings = null;
+        var _currentUserInfo = null;
+        //location variables
+        var _longAddress = "";
+        var _shortAddress = "";
+        var _isLocationNotFetched = true;
+
+        // constants
+        var TOTAL_PAGE = 4;
+        //stop looking for location after 10000 MILLISECONDS
+        var LOCATION_TIMEOUT = 10000;
+
+        // Question index according to AppModel.json
+        var CUSTOMER_NAME = 0;
+        var CUSTOMER_PHONE = 1;
+        var CUSTOMER_TYPE = 2;
+        var DEPARTMENT = 3;
+        var REGION = 4;
+        var AREA = 5;
+        var ISSUE = 6;
+        var ISSUE_DETAILS = 7;
+        var NAME = 8;
+        var PHONE_NUMBER = 9;
+        var LOCATION = 10;
+        var TIME = 11;
+
+        function onPageLoad() {
+            // document.getElementById("page0").style.display = "display";
+            // document.getElementById("page1").style.display = "none";
+            // document.getElementById("page2").style.display = "none";
+            // document.getElementById("page3").style.display = "none";
+            // Register for Android h/w back press event. For taking you to the back page
+            KASClient.App.registerHardwareBackPressCallback(function () {
+                KASClient.App.dismissCurrentScreen();
+            });
+    //will go to strings_en.json and get those strings and assign to _strings as an array
+            KASClient.App.getLocalizedStringsAsync(function (strings, error) {
+                if (error != null) {
+                    showAlert("Error:GetFormAsync:" + error);
+                    return;
+                }
+                _strings = strings;
+                // alert(_strings);
+                KASClient.Form.getFormAsync(function (form, error) {
+                    if (error != null) {
+                        showAlert("Error:GetFormAsync:" + error);
+                        return;
+                    }
+                    _form = form;
+                    inflateHTML();
+                    //inflate is to populate
+                    inflateQuestions();
+                    //get registered Kaizala user
+                    KASClient.App.getCurrentUserIdAsync(function (userId, error) {
+                        if (error != null) {
+                            handleError(error);
+                            return;
+                        }
+                        KASClient.App.getUsersDetailsAsync([userId], function (users, error) {
+                            if (error != null) {
+                                handleError(error);
+                                return;
+                            }
+
+                            //asign them to global variables
+                            _currentUserInfo = users[userId];
+                            _name = _currentUserInfo.originalName;
+                            _phoneNumber = _currentUserInfo.phoneNumber;
+                            inflateDetailsView();
+                        });
+                    });
+                });
+            });
+        }
+
+        function refreshLocation() {
+            if (_isLocationRefreshing == true)
+                return;
+
+            _isLocationRefreshing = true
+            KASClient.App.getCurrentDeviceLocationAsync(function (location, error) {
+                if (error != null) {
+                    _isLocationRefreshing = false;
+                    inflateLocationView();
+                    return;
+                }
+
+                _currentLocation = JSON.parse(location);
+                fetchAndPopulateAddress();
+            });
+
+            setTimeout(function () {
+                if (_isLocationRefreshing == true) {
+                    _isLocationRefreshing = false;
+                    inflateLocationView();
+                }
+            }, LOCATION_TIMEOUT);
+        }
+
+        function submitFormResponse() {
+            if (!_currentLocation.hasOwnProperty("lt")) {
+                _currentLocation["lt"] = 0.0;
+            }
+
+            if (!_currentLocation.hasOwnProperty("lg")) {
+                _currentLocation["lg"] = 0.0;
+            }
+
+            if (!_currentLocation.hasOwnProperty("n")) {
+                _currentLocation["n"] = "";
+            }
+
+            var questionToAnswerMap = JSON.parse("{}");
+//object to put our responses
+            questionToAnswerMap[CUSTOMER_NAME] = _customerNameQuestion;
+            questionToAnswerMap[CUSTOMER_PHONE] = _customerPhoneQuestion;
+            questionToAnswerMap[CUSTOMER_TYPE] = _customerTypeQuestion;
+            questionToAnswerMap[DEPARTMENT] = _departmentQuestion;
+            questionToAnswerMap[REGION] = _regionQuestion;
+            questionToAnswerMap[AREA] = _areaQuestion;
+            questionToAnswerMap[ISSUE] = _issueQuestion;
+            questionToAnswerMap[ISSUE_DETAILS] = _issueDetailsQuestion;
+            questionToAnswerMap[NAME] = _name;
+            questionToAnswerMap[PHONE_NUMBER] = _phoneNumber;
+            questionToAnswerMap[LOCATION] = JSON.stringify(_currentLocation);
+            questionToAnswerMap[TIME] = (new Date()).getTime();
+
+            // Finally submit the response
+            KASClient.Form.sumbitFormResponse(questionToAnswerMap, null, false, true /* showInChatCanvas */);
+        }
+
+        // handling UI
+        function inflateHTML() {
+            // header
+            inflateHeader();
+
+            //update page number
+            updatePage();
+        }
+
+        function updatePage() {
+            for (var i = 1; i <= TOTAL_PAGE; i++) {
+                document.getElementById("page" + i).style.display = _currentPage == i ? "block" : "none";
+                document.body.style.backgroundColor = _currentPage == TOTAL_PAGE ? "#f2f2f2" : "white";
+            }
+
+            if (_currentPage == 2) {
+                inflateOtherQuestions();
+            }
+
+            if (_currentPage == 3 && _isLocationNotFetched) {
+                _isLocationNotFetched = false;
+                refreshLocation();
+                inflateLocationView();
+            }
+
+            if (_currentPage == TOTAL_PAGE) {
+                inflateSummaryView();
+            }
+            
+            // footer
+            inflateFooterView();
+        }
+
+        function inflateHeader() {
+            var header = document.getElementById("header");
+            KASClient.UI.clearElement(header);
+
+            var navigationBar = new KASClient.UI.KASFormPageNavigationBar();
+            navigationBar.backAsset = "close.png";
+
+            var mainText = KASClient.UI.getElement("div", {
+                "font-size": "12pt",
+                "color": "#32495f",
+                "max-width": "300pt",
+                "font-weight": "500"
+            });
+            mainText.innerText = _strings["strMiniAppTitle"];
+
+            navigationBar.title = mainText.outerHTML;
+
+            navigationBar.backAction = function () {
+                KASClient.App.dismissCurrentScreen();
+            };
+
+            KASClient.UI.addElement(navigationBar.getView(), header);
+        }
+
+         function inflateCustomerSearchName() {
+            //select and clear the div
+            var customerNameDiv = document.getElementById("customerNameDiv");
+            KASClient.UI.clearElement(customerNameDiv);
+            //specify other elements within the original div that will have the title, input elements
+            var customerNameSearchTitle = KASClient.UI.getElement("div");
+            customerNameSearchTitle.className = "question-title";
+            customerNameSearchTitle.innerText = _strings[_form.questions[CUSTOMER_NAME].title];
+// console.log(customerNameSearchTitle);
+            var customerNameSearchInput = KASClient.UI.getElement("input");
+            customerNameSearchInput.type = "text";
+            customerNameSearchInput.className = "comment-input";
+//dependancy for IOS for just adding padding
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(customerNameSearchInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            customerNameSearchInput.placeholder = _strings["strTapToEnter"];
+            //when a value is inputed, assign var  customerNameQuestion the value inputed
+            customerNameSearchInput.addEventListener("input", function (event) {
+                _customerNameQuestion = event.target.value;
+                invalidateFooter();
+            });
+    //display the title div, input field
+            KASClient.UI.addElement(customerNameSearchTitle, customerNameDiv);
+            KASClient.UI.addElement(customerNameSearchInput, customerNameDiv);
+        }
+
+       
+        function inflateCustomerSearchPhone() {
+            var customerPhone = document.getElementById("customerPhone");
+            KASClient.UI.clearElement(customerPhone);
+            
+            var customerPhoneSearchTitle = KASClient.UI.getElement("div");
+            customerPhoneSearchTitle.className = "question-title";
+            customerPhoneSearchTitle.innerText = _strings[_form.questions[CUSTOMER_PHONE].title];
+
+            var customerPhoneSearchInput = KASClient.UI.getElement("input");
+            customerPhoneSearchInput.type = "text";
+            customerPhoneSearchInput.className = "comment-input";
+
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(customerPhoneSearchInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            customerPhoneSearchInput.placeholder = _strings["strTapToEnter"];
+            customerPhoneSearchInput.addEventListener("input", function (event) {
+                _customerPhoneQuestion = event.target.value;
+                invalidateFooter();
+            });
+
+            KASClient.UI.addElement(customerPhoneSearchTitle, customerPhone);
+            KASClient.UI.addElement(customerPhoneSearchInput, customerPhone);
+        }
+
+
+        function inflateCustomerType() {
+            //select and clear the div
+            var customerTypeDiv = document.getElementById("customerTypeDiv");
+            KASClient.UI.clearElement(customerTypeDiv);
+            //specify other elements within the original div that will have the title, input elements
+            var customerTypeTitle = KASClient.UI.getElement("div");
+            customerTypeTitle.className = "question-title";
+            customerTypeTitle.innerText = _strings[_form.questions[CUSTOMER_TYPE].title];
+
+            var customerTypeInput = KASClient.UI.getElement("input");
+            customerTypeInput.type = "text";
+            customerTypeInput.className = "comment-input";
+//dependancy for IOS for just adding padding
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(customerTypeInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            customerTypeInput.placeholder = _strings["strTapToEnter"];
+            //when a value is inputed, assign var  customerNameQuestion the value inputed
+            customerTypeInput.addEventListener("input", function (event) {
+                _customerTypeQuestion = event.target.value;
+                invalidateFooter();
+            });
+    //display the title div, input field
+            KASClient.UI.addElement(customerTypeTitle, customerTypeDiv);
+            KASClient.UI.addElement(customerTypeInput, customerTypeDiv);
+        }
+
+       
+        function inflateDepartment() {
+            var departmentDiv = document.getElementById("departmentDiv");
+            KASClient.UI.clearElement(departmentDiv);
+            
+            var departmentTitle = KASClient.UI.getElement("div");
+            departmentTitle.className = "question-title";
+            departmentTitle.innerText = _strings[_form.questions[DEPARTMENT].title];
+
+            var departmentInput = KASClient.UI.getElement("input");
+            departmentInput.type = "text";
+            departmentInput.className = "comment-input";
+
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(departmentInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            departmentInput.placeholder = _strings["strTapToEnter"];
+            departmentInput.addEventListener("input", function (event) {
+                _departmentQuestion = event.target.value;
+                invalidateFooter();
+            });
+
+            KASClient.UI.addElement(departmentTitle, departmentDiv);
+            KASClient.UI.addElement(departmentInput, departmentDiv);
+        }
+
+         function inflateRegion() {
+            //select and clear the div
+            var regionDiv = document.getElementById("regionDiv");
+            KASClient.UI.clearElement(regionDiv);
+            //specify other elements within the original div that will have the title, input elements
+            var regionTitle = KASClient.UI.getElement("div");
+            regionTitle.className = "question-title";
+            regionTitle.innerText = _strings[_form.questions[REGION].title];
+
+            var regionInput = KASClient.UI.getElement("input");
+            regionInput.type = "text";
+            regionInput.className = "comment-input";
+//dependancy for IOS for just adding padding
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(regionInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            regionInput.placeholder = _strings["strTapToEnter"];
+            //when a value is inputed, assign var  customerNameQuestion the value inputed
+            regionInput.addEventListener("input", function (event) {
+                _regionQuestion = event.target.value;
+                invalidateFooter();
+            });
+    //display the title div, input field
+            KASClient.UI.addElement(regionTitle, regionDiv);
+            KASClient.UI.addElement(regionInput, regionDiv);
+        }
+
+       
+        function inflateArea() {
+            var areaDiv = document.getElementById("areaDiv");
+            KASClient.UI.clearElement(areaDiv);
+            
+            var areaTitle = KASClient.UI.getElement("div");
+            areaTitle.className = "question-title";
+            areaTitle.innerText = _strings[_form.questions[AREA].title];
+
+            var areaInput = KASClient.UI.getElement("input");
+            areaInput.type = "text";
+            areaInput.className = "comment-input";
+
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(areaInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            areaInput.placeholder = _strings["strTapToEnter"];
+            areaInput.addEventListener("input", function (event) {
+                _areaQuestion = event.target.value;
+                invalidateFooter();
+            });
+
+            KASClient.UI.addElement(areaTitle, areaDiv);
+            KASClient.UI.addElement(areaInput, areaDiv);
+        }
+
+         function inflateIssue() {
+            //select and clear the div
+            var issueDiv = document.getElementById("issueDiv");
+            KASClient.UI.clearElement(issueDiv);
+            //specify other elements within the original div that will have the title, input elements
+            var issueTitle = KASClient.UI.getElement("div");
+            issueTitle.className = "question-title";
+            issueTitle.innerText = _strings[_form.questions[ISSUE].title];
+
+            var issueInput = KASClient.UI.getElement("input");
+            issueInput.type = "text";
+            issueInput.className = "comment-input";
+//dependancy for IOS for just adding padding
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(issueInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            issueInput.placeholder = _strings["strTapToEnter"];
+            //when a value is inputed, assign var  customerNameQuestion the value inputed
+            issueInput.addEventListener("input", function (event) {
+                _issueQuestion = event.target.value;
+                invalidateFooter();
+            });
+    //display the title div, input field
+            KASClient.UI.addElement(issueTitle, issueDiv);
+            KASClient.UI.addElement(issueInput, issueDiv);
+        }
+
+       
+        function inflateIssueDetails() {
+            var issueDetailsDiv = document.getElementById("issueDetailsDiv");
+            KASClient.UI.clearElement(issueDetailsDiv);
+            
+            var issueDetailsTitle = KASClient.UI.getElement("div");
+            issueDetailsTitle.className = "question-title";
+            issueDetailsTitle.innerText = _strings[_form.questions[ISSUE_DETAILS].title];
+
+            var issueDetailsInput = KASClient.UI.getElement("input");
+            issueDetailsInput.type = "text";
+            issueDetailsInput.className = "comment-input";
+
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(issueDetailsInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            issueDetailsInput.placeholder = _strings["strTapToEnter"];
+            issueDetailsInput.addEventListener("input", function (event) {
+                _issueDetailsQuestion = event.target.value;
+                invalidateFooter();
+            });
+
+            KASClient.UI.addElement(issueDetailsTitle, issueDetailsDiv);
+            KASClient.UI.addElement(issueDetailsInput, issueDetailsDiv);
+        }
+
+        function inflateQuestions() {
+            inflateCustomerSearchName();
+            inflateCustomerSearchPhone();
+        }
+
+        function inflateOtherQuestions() {
+            inflateCustomerType();
+            inflateDepartment();
+            inflateRegion();
+            inflateArea();
+            inflateIssue();
+            inflateIssueDetails();
+        }
+
+        function inflateDetailsView() {
+            // 3rd Page
+            
+            var detailsViewDiv = document.getElementById("detailsViewDiv");
+            KASClient.UI.clearElement(detailsViewDiv);
+
+            // show details view
+            var showDetailsView = KASClient.UI.getElement("div", {
+                "display": "block"
+            });
+
+            var showDetailsViewName = KASClient.UI.getElement("div");
+            showDetailsViewName.className = "section";
+
+            var showDetailsViewNameHeader = KASClient.UI.getElement("p");
+            showDetailsViewNameHeader.className = "comment-header";
+            showDetailsViewNameHeader.innerText = _strings[_form.questions[NAME].title];
+
+            var showDetailsViewNameInput = KASClient.UI.getElement("input");
+            showDetailsViewNameInput.type = "text";
+            showDetailsViewNameInput.className = "comment-input";
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(showDetailsViewNameInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            showDetailsViewNameInput.placeholder = _strings[_form.questions[NAME].title];
+            //value of the placeholder with Commando Name
+            showDetailsViewNameInput.value = _name;
+            showDetailsViewNameInput.addEventListener("input", function (event) {
+                _name = event.target.value;
+                invalidateFooter();
+            });
+
+            KASClient.UI.addElement(showDetailsViewNameHeader, showDetailsViewName);
+            KASClient.UI.addElement(showDetailsViewNameInput, showDetailsViewName);
+
+            var showDetailsViewPhone = KASClient.UI.getElement("div", {
+                "border-bottom": "none"
+            });
+            showDetailsViewPhone.className = "section";
+
+            var showDetailsViewPhoneHeader = KASClient.UI.getElement("p");
+            showDetailsViewPhoneHeader.className = "comment-header";
+            showDetailsViewPhoneHeader.innerText = _strings[_form.questions[PHONE_NUMBER].title];
+
+            var showDetailsViewPhoneInput = KASClient.UI.getElement("input", {
+                "border-bottom": "none"
+            });
+            showDetailsViewPhoneInput.type = "tel";
+            showDetailsViewPhoneInput.className = "comment-input";
+            if (KASClient.getPlatform() == KASClient.Platform.iOS) {
+                KASClient.UI.addCSS(showDetailsViewPhoneInput, {
+                    "padding-left": "13pt"
+                });
+            }
+            showDetailsViewPhoneInput.placeholder = _phoneNumber;
+            showDetailsViewPhoneInput.readOnly = true;
+            showDetailsViewPhoneInput.addEventListener("input", function (event) {
+                _phoneNumber = event.target.value;
+                invalidateFooter();
+            });
+//put the phone in it'sown element 
+            KASClient.UI.addElement(showDetailsViewPhoneHeader, showDetailsViewPhone);
+            KASClient.UI.addElement(showDetailsViewPhoneInput, showDetailsViewPhone);
+//then the phone element in the div
+            KASClient.UI.addElement(showDetailsViewName, showDetailsView);
+            KASClient.UI.addElement(showDetailsViewPhone, showDetailsView);
+
+            KASClient.UI.addElement(showDetailsView, detailsViewDiv);
+        }
+
+        function inflateLocationView() {
+            var locationViewDiv = document.getElementById("locationViewDiv");
+            KASClient.UI.clearElement(locationViewDiv);
+
+            // location view header
+            var locationHeader = KASClient.UI.getElement("div");
+            locationHeader.className = "location-title";
+            locationHeader.innerText = _strings[_form.questions[LOCATION].title];
+
+            //location map view
+            var locationMapView = KASClient.UI.getElement("img");
+            if (_currentLocation.hasOwnProperty("lt") == true && _currentLocation.hasOwnProperty("lg") == true) {
+                locationMapView.src =
+                    "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=360x170&maptype=roadmap&markers=color:blue%7C%7C" +
+                    _currentLocation["lt"] + "," + _currentLocation["lg"];
+            } else {
+                locationMapView.style.display = "none";
+            }
+            locationMapView.className = "location-image";
+            locationMapView.onerror = function (event) {
+                event.target.style.display = "none";
+            }
+
+            // location address-refresh div
+            var locationAddressRefreshDiv = KASClient.UI.getElement("div", {
+                "padding": "15pt",
+                "padding-top": "8px",
+                "display": "inline-flex"
+            });
+
+            var locationAddressDiv = KASClient.UI.getElement("div", {
+                "float": "left",
+                "display": "flex",
+                "flex-direction": "column",
+                "width": "100%"
+            });
+
+            // low network  warning text
+            var locationNetworkWarning = KASClient.UI.getElement("label", {
+                "color": "#6f7e8f",
+                "font-size": "9pt",
+                "display": "none"
+            });
+
+            // main address text
+            var locationAddress = KASClient.UI.getElement("label");
+            locationAddress.className = "location-address";
+
+            if (!(_currentLocation.hasOwnProperty("lt") == true && _currentLocation.hasOwnProperty("lg") == true)) {
+                if (!_isLocationRefreshing) {
+                    locationNetworkWarning.style.display = "block";
+                    locationNetworkWarning.innerText = _strings["strNoLocationAlertLabel"];
+                } else {
+                    locationNetworkWarning.style.display = "none";
+                    locationAddress.innerText = _strings["strMiniAppLoadingLabel"];
+                }
+            } else {
+                if (_longAddress == "" && _shortAddress == "") {
+                    locationNetworkWarning.style.display = "block";
+                    locationAddress.innerText = _currentLocation["lt"] + ", " + _currentLocation["lg"];
+                    locationNetworkWarning.innerText = _strings["strMiniAppLocationNetworkWarningLabel"];
+
+                } else {
+
+                    locationAddress.innerText = _longAddress == "" ? _shortAddress : _longAddress;
+
+                }
+            }
+            _currentLocation["n"] = locationAddress.innerText;
+
+            KASClient.UI.addElement(locationAddress, locationAddressDiv);
+            KASClient.UI.addElement(locationNetworkWarning, locationAddressDiv);
+
+            // refresh button
+            var refreshImg = KASClient.UI.getElement("img");
+            refreshImg.src = "refresh.png";
+
+            // refresh label
+            var refreshLabel = KASClient.UI.getElement("label", {
+                "font-size": "9pt",
+                "color": "#006ff1",
+                "font-weight": "bold"
+            });
+            refreshLabel.innerText = _strings["strRefreshLabel"];
+
+            var refreshDiv = KASClient.UI.getElement("div", {
+                "float": "right",
+                "display": "flex",
+                "flex-direction": "column",
+                "text-align": "right",
+                "justify-content": "flex-end",
+                "margin-left": "4pt",
+                "min-width": "50pt"
+            });
+
+            refreshDiv.addEventListener("click", function () {
+                refreshLocation();
+                inflateLocationView();
+            });
+
+            if (!_isLocationRefreshing) {
+                refreshLabel.style.display = "block";
+                refreshImg.style.display = "none";
+
+                refreshImg.className = "refresh-img";
+            } else {
+                refreshLabel.style.display = "none";
+                refreshImg.style.display = "block";
+
+                refreshImg.className = "refresh-img-selected";
+            }
+
+            KASClient.UI.addElement(refreshImg, refreshDiv);
+            KASClient.UI.addElement(refreshLabel, refreshDiv);
+
+            KASClient.UI.addElement(locationAddressDiv, locationAddressRefreshDiv);
+            KASClient.UI.addElement(refreshDiv, locationAddressRefreshDiv);
+
+            KASClient.UI.addElement(locationHeader, locationViewDiv);
+            KASClient.UI.addElement(locationMapView, locationViewDiv);
+            KASClient.UI.addElement(locationAddressRefreshDiv, locationViewDiv);
+
+            invalidateFooter();
+
+            if (_currentPage == TOTAL_PAGE) {
+                inflateSummaryView();
+            }
+        }
+
+        function invalidateFooter() {
+            inflateFooterView();
+        }
+
+        function inflateFooterView() {
+            var footer = document.getElementById("footer");
+            KASClient.UI.clearElement(footer);
+
+            // setting footer view background
+            KASClient.UI.addCSS(footer, {
+                "background-image": (_currentPage == TOTAL_PAGE ? "url('footer_bg_3.png')" :
+                    "url('footer_bg.png')")
+            });
+
+            // Previous button
+            var prevButton = KASClient.UI.getElement("input");
+            prevButton.type = "submit";
+            prevButton.className = "footer-action-previous";
+            prevButton.value = "";
+            prevButton.disabled = (_currentPage == 1);
+            if (KASClient.getPlatform() == KASClient.Platform.Android && prevButton.disabled) {
+                KASClient.UI.addCSS(prevButton, {
+                    "border": "1px solid rgba(227, 230, 233, 0.5)"
+                });
+            }
+            prevButton.addEventListener("click", function () {
+                _currentPage -= 1;
+
+                updatePage();
+                document.body.scrollTop = 0;
+            });
+
+            // Progress view
+            var progressDiv = KASClient.UI.getElement("div", {
+                "display": "flex",
+                "align-items": "center"
+            });
+
+            progressDiv.className = "footer-action";
+
+            var progressInnerDiv = KASClient.UI.getElement("div", {
+                "width": "100%"
+            });
+
+            var progressText = KASClient.UI.getElement("div", {
+                "width": "100%",
+                "text-align": "center",
+                "padding-bottom": "3pt",
+                "font-size": "11pt",
+                "color": "black",
+                "font-weight": "500"
+            });
+
+            progressText.innerText = printf(_strings["strProgressTextLabel"], _currentPage, TOTAL_PAGE);
+
+            var progressBarOuterDiv = KASClient.UI.getElement("div", {
+                "width": "80%",
+                "height": "2pt",
+                "background-color": "rgba(152, 163, 175, .25)",
+                "margin-left": "10%"
+            });
+
+            var progressBarInnerDiv = KASClient.UI.getElement("div", {
+                "width": "" + (_currentPage * 100 / TOTAL_PAGE) + "%",
+                "height": "100%",
+                "background-color": "rgb(253, 158, 40)"
+            });
+
+            KASClient.UI.addElement(progressBarInnerDiv, progressBarOuterDiv);
+
+            KASClient.UI.addElement(progressText, progressInnerDiv);
+            KASClient.UI.addElement(progressBarOuterDiv, progressInnerDiv);
+
+            KASClient.UI.addElement(progressInnerDiv, progressDiv);
+
+            // Next button
+            var nextBgColor = (_currentPage == TOTAL_PAGE ? "#5ad7a4" : "#00a1ff");
+            var nextButton = KASClient.UI.getElement("input", {
+                "background-color": nextBgColor
+            });
+            nextButton.type = "submit";
+            nextButton.className = (_currentPage == TOTAL_PAGE ? "footer-action-send" : "footer-action-next");
+            nextButton.value = (_currentPage == TOTAL_PAGE ? _strings["strSendResponseLabel"] : "");
+            var nextButtonIsDisabled = false;
+            if (_currentPage == 1) {
+//check whether the first page is not empty 
+                if (_customerNameQuestion == "" || _customerPhoneQuestion == "") {
+                    nextButtonIsDisabled = true;
+                }
+
+            }else if(_currentPage == 2){
+                //searchNames();
+                //check whether the second page is not empty 
+                if (_customerTypeQuestion == "" || _departmentQuestion == "" || _regionQuestion == "" || _issueQuestion == "" || _issueDetailsQuestion == "") {
+                    nextButtonIsDisabled = true;
+                }
+            
+            } else if (_currentPage == 3) {
+                if (_name == "" || _phoneNumber == "") {
+                    nextButtonIsDisabled = true;
+                }
+                if (_isLocationRefreshing) {
+                    nextButtonIsDisabled = true;
+                }
+            }
+
+            nextButton.disabled = nextButtonIsDisabled;
+            if (KASClient.getPlatform() == KASClient.Platform.Android && nextButton.disabled) {
+                KASClient.UI.addCSS(nextButton, {
+                    "background-color": "rgb(155, 218, 253)"
+                });
+            }
+            nextButton.addEventListener("click", function () {
+                if (_currentPage != TOTAL_PAGE) {
+                    _currentPage += 1;
+                    updatePage();
+                    document.body.scrollTop = 0;
+                } else {
+                    submitFormResponse();
+                }
+            });
+
+            KASClient.UI.addElement(prevButton, footer);
+            KASClient.UI.addElement(progressDiv, footer);
+            KASClient.UI.addElement(nextButton, footer);
+        }
+
+        function inflateSummaryView() {
+            
+            var summaryView = document.getElementById("page3");
+            KASClient.UI.clearElement(summaryView);
+
+            var divAttributes = {
+                "background-color": "white",
+                "color": "#32485f",
+                "font-size": "13.5pt",
+                "margin": "16px",
+                "margin-top": "8px",
+                "margin-bottom": "8px",
+                "box-shadow": "0px 0px 1px 0px rgba(0,0,0,0.12)",
+                "border-radius": "4px"
+            };
+            
+            //Customer Name
+            var customerNameDetailsDiv = KASClient.UI.getElement("div", divAttributes);
+
+            var customerNameDetailsHeader = KASClient.UI.getElement("div", {
+                "padding": "14px",
+                "padding-bottom": "0pt"
+            });
+
+            customerNameDetailsHeader.className = "comment-header";
+            customerNameDetailsHeader.innerText = _strings[_form.questions[CUSTOMER_NAME].title];
+            KASClient.UI.addElement(customerNameDetailsHeader, customerNameDetailsDiv);
+            
+            var customerNameDetailsView = KASClient.UI.getElement("div", {
+                "padding": "14px",
+                "padding-top": "5pt"
+            });
+
+            var customerNameDiv = KASClient.UI.getElement("div", {
+                "color": "#32485f",
+                "font-size": "12pt",
+                "overflow-wrap": "break-word",
+                "word-wrap": "break-word",
+                "word-break": "break-word"
+            });
+
+            customerNameDiv.innerHTML = _customerNameQuestion;
+
+            KASClient.UI.addElement(customerNameDiv, customerNameDetailsView);
+            KASClient.UI.addElement(customerNameDetailsView, customerNameDetailsDiv);
+            
+            
+            //Customer Phone
+            var customerPhoneDetailsDiv = KASClient.UI.getElement("div", divAttributes);
+
+            var customerPhoneDetailsHeader = KASClient.UI.getElement("div", {
+                "padding": "14px",
+                "padding-bottom": "0pt"
+            });
+
+            customerPhoneDetailsHeader.className = "comment-header";
+            customerPhoneDetailsHeader.innerText = _strings[_form.questions[CUSTOMER_PHONE].title];
+            KASClient.UI.addElement(customerPhoneDetailsHeader, customerPhoneDetailsDiv);
+
+            var customerPhoneDetailsView = KASClient.UI.getElement("div", {
+                "padding": "14px",
+                "padding-top": "5pt"
+            });
+
+            var customerPhone = KASClient.UI.getElement("div", {
+                "color": "#32485f",
+                "font-size": "12pt",
+                "overflow-wrap": "break-word",
+                "word-wrap": "break-word",
+                "word-break": "break-word"
+            });
+
+            customerPhone.innerHTML = _customerPhoneQuestion;
+
+            KASClient.UI.addElement(customerPhone, customerPhoneDetailsView);
+            KASClient.UI.addElement(customerPhoneDetailsView, customerPhoneDetailsDiv);
+            // Personal Details Summary for Commando Name & Phone Number
+            var detailsDiv = KASClient.UI.getElement("div", divAttributes);
+
+            var detailsHeader = KASClient.UI.getElement("div", {
+                "padding": "14px",
+                "padding-bottom": "0pt"
+            });
+            detailsHeader.className = "comment-header";
+            detailsHeader.innerText = _strings["strMiniAppYourDetails"];
+            KASClient.UI.addElement(detailsHeader, detailsDiv);
+
+            var details = KASClient.UI.getElement("table", {
+                "border": "none",
+                "padding": "14px",
+                "padding-top": "5pt",
+                "color": "#32485f",
+                "font-size": "12pt",
+                "overflow-wrap": "break-word",
+                "word-wrap": "break-word",
+                "word-break": "break-word"
+            });
+
+            var row1 = details.insertRow(0);
+            var cell11 = row1.insertCell(0);
+            var cell12 = row1.insertCell(1);
+            cell11.className = "first-column";
+            cell11.innerHTML = _strings[_form.questions[NAME].title];
+            cell12.innerHTML = ": " + _name;
+
+            var row2 = details.insertRow(1);
+            var cell21 = row2.insertCell(0);
+            var cell22 = row2.insertCell(1);
+            cell21.className = "first-column";
+            cell21.innerHTML = _strings[_form.questions[PHONE_NUMBER].title];
+            cell22.innerHTML = ": " + _phoneNumber;
+            
+            KASClient.UI.addElement(details, detailsDiv);
+
+            // Location Summary
+            var locationDiv = KASClient.UI.getElement("div", divAttributes);
+
+            var locationHeader = KASClient.UI.getElement("div", {
+                "padding": "14px",
+                "padding-bottom": "0pt"
+            });
+            locationHeader.className = "comment-header";
+            locationHeader.innerText = _strings[_form.questions[LOCATION].title];
+            KASClient.UI.addElement(locationHeader, locationDiv);
+
+            var location = KASClient.UI.getElement("div", {
+                "padding-bottom": "14px",
+                "padding-top": "14px"
+            });
+
+            if (_currentLocation.hasOwnProperty("lt") == true && _currentLocation.hasOwnProperty("lg") == true) {
+                var locationMap = KASClient.UI.getElement("img", {
+                    "width": "100%",
+                    "height": "auto",
+                    "max-height": "200pt",
+                    "padding-bottom": "10pt"
+                });
+                locationMap.src =
+                    "https://maps.googleapis.com/maps/api/staticmap?zoom=18&size=360x170&maptype=roadmap&markers=color:blue%7C%7C" +
+                    _currentLocation["lt"] + "," + _currentLocation["lg"];
+                locationMap.onerror = function (e) {
+                    KASClient.UI.removeElement(locationMap, location);
+                }
+                KASClient.UI.addElement(locationMap, location);
+            }
+
+            var locationName;
+            if (_currentLocation["n"] != "") {
+                locationName = KASClient.UI.getElement("div", {
+                    "padding": "14px",
+                    "padding-top": "0pt",
+                    "padding-bottom": "0pt",
+                    "color": "#32485f",
+                    "font-size": "12pt"
+                });
+
+                locationName.innerHTML = _currentLocation["n"];
+            } else {
+                locationName = KASClient.UI.getElement("div", {
+                    "padding": "14px",
+                    "padding-top": "0pt",
+                    "padding-bottom": "0pt",
+                    "color": "#6f7e8f",
+                    "font-size": "9pt"
+                });
+
+                locationName.innerHTML = _strings["strNoLocationLabel"];
+            }
+            
+            KASClient.UI.addElement(locationName, location);
+
+            KASClient.UI.addElement(location, locationDiv);
+
+            KASClient.UI.addElement(customerNameDetailsDiv, summaryView);
+            KASClient.UI.addElement(customerPhoneDetailsDiv, summaryView);
+            KASClient.UI.addElement(detailsDiv, summaryView);
+            //details for commando
+            KASClient.UI.addElement(locationDiv, summaryView);
+        }
+
+        // Fetching address from location
+        function fetchAndPopulateAddress() {
+            if (_currentLocation.hasOwnProperty("lt") == true && _currentLocation.hasOwnProperty("lg") == true) {
+                var xhr = new XMLHttpRequest();
+                var url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + _currentLocation["lt"] + "," +
+                    _currentLocation["lg"];
+                xhr.open("GET", url, true);
+                xhr.responseType = "json";
+                xhr.timeout = LOCATION_TIMEOUT;
+                xhr.onload = function () {
+                    var status = this.status;
+                    var response;
+                    if (status == 200) {
+                        try {
+                            response = JSON.parse(this.response);
+                        } catch (e) {
+                            response = this.response;
+                        }
+                        populateAddress(response["results"][0]);
+                    }
+                    _isLocationRefreshing = false;
+                    inflateLocationView();
+                };
+                xhr.onerror = function () {
+                    _isLocationRefreshing = false;
+                    inflateLocationView();
+                }
+                xhr.send();
+            } else {
+                _isLocationRefreshing = false;
+                inflateLocationView();
+            }
+        }
+
+        function populateAddress(address) {
+            _longAddress = address["formatted_address"];
+
+            var state = "";
+            _district = "";
+            _postalCode = "";
+            var address_components = address["address_components"];
+            for (var component in address_components) {
+                var types = address_components[component]["types"];
+                for (var type in types) {
+                    if (types[type] == "administrative_area_level_2") {
+                        _district = address_components[component]["long_name"];
+                    } else if (types[type] == "administrative_area_level_1") {
+                        state = address_components[component]["long_name"];
+                    } else if (types[type] == "postal_code") {
+                        _postalCode = address_components[component]["long_name"];
+                    }
+                }
+            }
+
+            _shortAddress = "";
+            if (_postalCode != "") {
+                _shortAddress += _postalCode + ", ";
+            }
+            if (_district != "") {
+                _shortAddress += _district + ", ";
+            }
+            if (state != "") {
+                _shortAddress += state;
+            }
+        }
+
+        function showError(errorMsg) {
+            KASClient.App.showNativeErrorMessage(errorMsg);
+        }
+
+        // For debug
+        function dismissCurrentScreen() {
+            KASClient.App.dismissCurrentScreen();
+        };
+
+        function createObject(readyStateFunction, requestMethod, requestUrl, sendData = null) {
+
+            var obj = new XMLHttpRequest;
+            obj.onreadystatechange = function() {
+                if ((this.readyState == 4) && (this.status == 200)) {
+                    readyStateFunction(this.responseText);
+                }
+            };
+            console.log(sendData);
+            obj.open(requestMethod, requestUrl, true);
+            if (requestMethod == 'POST') {
+                obj.setRequestHeader("Content-type", "application/json");
+                obj.send(sendData);
+            } else {
+                obj.send();
+            }
+        }
+
+         function searchNames() {
+            //1. Show preloader
+            KASClient.App.showProgressBar("Fetching Results");
+            //2. Retrieve form values
+            //3. Validate
+            if (_customerNameQuestion == null || _customerPhoneQuestion == "") {
+                KASClient.App.showNativeErrorMessage("Please enter the customer's name.");
+            }
+            if ((_customerPhoneQuestion != null) || (_customerPhoneQuestion != "")) {
+                sendData = {
+                    name: _customerNameQuestion,
+                    phone: _customerPhoneQuestion
+                };
+            } else {
+                sendData = {
+                    name: _customerNameQuestion
+                };
+            }
+            var jsonData = JSON.stringify(sendData);
+            //4. Submit form values to search web service
+            createObject(displayCustomers, methods[0], baseUrl + "searchCustomer/" + sendData.name);
+        }
+
+        function displayCustomers(responseTxt) {
+
+            KASClient.App.hideProgressBar();
+            //1. validate   (responseTxt != "") && (responseTxt != null) && (responseTxt != "null")
+            if (responseTxt.length > 2) {
+                //2. Show dropdown for valid data
+                var responseObj = JSON.parse(responseTxt);
+                var tData;
+
+                var option = "<option selected>--Select customer--</option>";
+
+                for (tData in responseObj) {
+                    option += "<option value='" + responseObj[tData].customerId + "' cName='" + responseObj[tData].name + "'>" +
+                        responseObj[tData].name + " " + responseObj[tData].telephone +
+                        "</option>";
+                }
+                document.getElementById("customer").innerHTML = option;
+                document.getElementById("formSearchDiv").style.display = "none";
+                document.getElementById("issueFillDiv").style.display = "block";
+                inflateOtherQuestions();
+            } else {
+                //3. Remove preloader
+                KASClient.App.hideProgressBar();
+
+                //4. Show error message     
+                KASClient.App.showNativeErrorMessage("Cannot find this customer. Please try again.");
+            }
+        }
+
+    </script>
+</head>
+
+<body onload="onPageLoad()">
+    <!--The description section-->
+    <div id="header">
+    </div>
+    <div class="body-container">
+         <div id="page1">
+            <div class="section" id="customerNameDiv">
+            </div>
+            <div class="section" id="customerPhone"style="border-bottom: none">
+            </div>
+        </div>
+            <!-- <label>Customer's Name:</label>
+            </div>
+            <div>
+            <input id="customerNameDiv"/> 
+            </div>
+            <div>
+            <label>Customer's Phone Number:</label>
+            </div>
+            <div>
+            <input id="customerPhone"/> <script>invalidateFooter();</script>
+            </div>
+       </div> -->
+        <div id="page2">
+            <div class="section">
+                <section id="customer"></section>
+            </div>
+            <div class="section" id="customerTypeDiv">
+            </div>
+            <div class="section" id="departmentDiv">
+            </div>
+            <div class="section" id="regionDiv">
+            </div>
+            <div class="section" id="areaDiv">
+            </div>
+            <div class="section" id="issueDiv">
+            </div>
+            <div class="section" id="issueDetailsDiv" style="border-bottom: none">
+            </div>
+        </div>
+        <div id="page3">
+            <div class="section" id="detailsViewDiv" style="padding-top : 8px">
+            </div>
+            <div class="section" id="locationViewDiv" style="border-bottom: none">
+            </div>
+        </div>
+        <div id="page4" style="width: 100%; padding-top: 8px">
+        </div>
+    </div>
+    <!--The footer section-->
+    <div class="footer" id="footer">
+    </div>
+    </div>
+    <div id="bgView" class="bg-view">
+    </div>
+</body>
+
+</html>

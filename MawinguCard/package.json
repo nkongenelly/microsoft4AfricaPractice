@@ -1,0 +1,35 @@
+{
+	"id": "com.nelly.nanyukiafcustomer", 
+	"schemaVersion": 1,
+	"version": "7",
+	"minorVersion": 29,
+	"providerName": "NellyNanyukiaf",
+	"displayName": "Customer NNN",
+	"description": "Accept customer details", 
+  "icon": "customer.png",
+  "appModel": "AppModel.json",
+  "dials": {
+    "isLocalised": false,
+    "isPinned": false
+  },
+  "actionScope": "Group",
+  "views": {
+    "ChatCanvasCardView": {
+      "showReceipts": false,
+      "showLikes": false,
+      "showComments": false,
+      "labelResponseSending": "Updating your customer details",
+      "labelResponseFailed": "Failed to update your customer details",
+      "labelResponded": "Customer details updated",
+      "isResponseEditable": false
+    },
+    "CreationView": {
+      "sourceLocation": "Response.html",
+      "showNativeToolbar": false
+    },
+    "ResponseResultsView": {
+      "sourceLocation": "ResponseSummary.html",
+      "showNativeToolbar": false
+    }
+  }
+}

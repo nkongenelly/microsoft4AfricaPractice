@@ -1,0 +1,148 @@
+<html> 
+     
+    <head> 
+        <title></title> 
+        <script type="text/javascript" src="KASClient.js"></script> 
+        <link rel="stylesheet" href="bootstrap.min.css">
+        <script> 
+            var _form; // type: KASForm
+            var _myFormResponses; // type: KASFormResponse[]
+     
+            // Below will be called on onload of ResponseView.html 
+            function onCreatePageLoad() { 
+                KASClient.Form.initFormAsync (function (form, error) { 
+                    if (error != null) { 
+                        showAlert("Error:initFormAsync:" + error); 
+                        return; 
+                    } 
+                    _form = form; 
+                }); 
+            
+            }  
+                // KASClient.Form.getFormAsync(function (form, error) { 
+                //     if (error != null) { 
+                //         KASClient.App.showNativeErrorMessage("Error:getFormAsync:" + error); 
+                //         return; 
+                //     } 
+                //     _form = form; 
+                // }
+            //         // Document title would be the form title
+            //         document.getElementById("title").innerHTML = _form.title;
+                    
+            //         KASClient.Form.getMyFormResponsesAsync(function (responses, error) { 
+            //             if (error != null) { 
+            //                 KASClient.App.showNativeErrorMessage("Error:getMyFormResponsesAsync:" + error); 
+            //                 return; 
+            //             } 
+            //             _myFormResponses = responses;
+                        
+            //             // Render previous response, if any
+            //             if (isCurrentUserResponded()) {
+            //                 var fullName = _myFormResponses[0].questionToAnswerMap["0"];
+            //                 var phone = _myFormResponses[0].questionToAnswerMap["1"];
+            //                 var region = _myFormResponses[0].questionToAnswerMap["0"];
+            //                 var area = _myFormResponses[0].questionToAnswerMap["1"];
+            //                 var issue = _myFormResponses[0].questionToAnswerMap["0"];
+            //                 var details = _myFormResponses[0].questionToAnswerMap["1"];
+            //             }
+            //         }); 
+            //     }); 
+            // } 
+     
+     
+            // Below will be called when responder submits a new response 
+            function submitData(fullName, area) { 
+                var fullName = document.getElementById("fullNames").value;
+                // var phone = document.getElementById("phone").value;
+                // var region = document.getElementById("region").value;
+                 var area = document.getElementById("area").value;
+                // var issue = document.getElementById("issue").value;
+                // var details = document.getElementById("details").value;
+
+                if (fullName == null || fullName == "") { 
+                    KASClient.App.showNativeErrorMessage("Please fill name of customer"); 
+                } else if (area == "") { 
+                    KASClient.App.showNativeErrorMessage("Please select your region"); 
+                } else { 
+                    //For submitting response a question-answer 
+                    // is required, lets create that! 
+                    // var questionToAnswerMap = JSON.parse("{}"); 
+                    // _form.questions[0].title = document.getElementById("fullNames").value; 
+                    // _form.questions[1].title = document.getElementById("phone").value; 
+                    // _form.questions[2].title = document.getElementById("region").value; 
+                    // _form.questions[3].title = document.getElementById("area").value; 
+                    // _form.questions[4].title = document.getElementById("issue").value; 
+                    // _form.questions[5].title = document.getElementById("details").value;
+
+                        //_form = questionToAnswerMap;
+                        KASClient.Form.submitFormRequest(_form);
+                }
+            }
+     
+                    // var responseId = null; 
+                    // var isEditingPreviousResponse = false;
+                    
+                    // // If there is a previous response, update it
+                    // if (isCurrentUserResponded()) {
+                    //     var responseId = null; 
+                    //     isEditingPreviousResponse = false;
+                    // }
+     
+                   // Finally submit the response 
+                    
+                   // KASClient.Form.sumbitFormResponse(questionToAnswerMap, responseId, isEditingPreviousResponse, false /* showInChatCanvas */, false /* isAnonymous */); 
+            //         KASClient.Form.submitFormRequest(_form);
+                
+            //     } 
+            // }
+            
+            function isCurrentUserResponded() {
+                return _myFormResponses && _myFormResponses.length > 0;
+            }
+        </script> 
+    </head> 
+     
+    <body onload="onCreatePageLoad()"> 
+        <br/> <br/> 
+        <div> 
+            <p id="title"></p> 
+        </div> 
+        <div> 
+            <br/> <br/> 
+            <div> 
+                <p>Issue Reporting</p> 
+                
+                <label>Client's Name</label><br/>
+                <input class="form-control" type="text" name="fullName" id = "fullNames" value="">
+                <br/> <br/> 
+                <label>Phone Number</label><br/>
+                <input class="form-control" type="text" name="phone" required> <br/><br/>
+                <br/> <br/> 
+                <label>Region</label>
+                <select class="form-control" name ="region" >
+                        
+                    <option selected></option> 
+                    <option name="region" value="meru" checked>Meru</option>
+                    <option name="region" value="nyeri" checked>Nyeri</option>
+                    <option name="region" value="karatina" checked>Karatina</option> 
+                    <option name="region" value="nanyuki" checked>Nanyuki</option>
+                    <option name="region" value="embu" checked>Embu</option>
+                </select>
+                <br/> <br/> 
+                <label>Area</label><br/>
+                <input class="form-control" type="text" name="area" id = "area" required> <br/><br/>
+                <br/> <br/> 
+                <label>Issue</label><br/>
+                <input class="form-control" type="text" name="issue" required> <br/><br/>
+                <br/> <br/> 
+                <label>Details</label><br/>
+                <textarea class="form-control" name = "details" required></textarea>
+            </div> 
+            <br/> <br/> 
+            <div class="footer"> 
+                
+                <input type="submit" name="submit" value="Submit" onclick="submitData()"> 
+            </div> 
+    </body> 
+     
+    </html> 

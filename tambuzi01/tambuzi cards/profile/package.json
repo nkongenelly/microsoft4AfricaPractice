@@ -1,0 +1,35 @@
+{
+	"id": "com.tambuzi.profile", 
+	"schemaVersion": 1, 
+	"version": "8",
+	"minorVersion": 2,
+	"providerName": "TambuziApp",
+	"displayName": "Profile Submit",
+	"description": "Update your name, bio, profile image and worker ID", 
+  "icon": "profile.png",
+  "appModel": "AppModel.json",
+  "dials": {
+    "isLocalised": false,
+    "isPinned": false
+  },
+  "actionScope": "Group",
+  "views": {
+    "ChatCanvasCardView": {
+      "showReceipts": false,
+      "showLikes": false,
+      "showComments": false,
+      "labelResponseSending": "Updating your profile",
+      "labelResponseFailed": "Failed to update your profile",
+      "labelResponded": "Profile updated",
+      "isResponseEditable": false
+    },
+    "CreationView": {
+      "sourceLocation": "Response.html",
+      "showNativeToolbar": false
+    },
+    "ResponseResultsView": {
+      "sourceLocation": "ResponseSummary.html",
+      "showNativeToolbar": false
+    }
+  }
+}
